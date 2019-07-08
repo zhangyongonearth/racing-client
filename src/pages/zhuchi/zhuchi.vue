@@ -76,56 +76,56 @@ export default {
    * 改分：点击改分的时候，显示队伍列表和改分
    */
   name: 'zhuchi',
-  data(){
+  data() {
     return {
-      activedRace:'789313',//从localstorage中获取，如果有该值，
+      activedRace: '789313', // 从localstorage中获取，如果有该值，
       ruleForm: {
         racename: '竞赛名称',
-        number: '4',
+        number: '4'
       },
       rules: {
-        racename:[
+        racename: [
           { required: true, message: '请输入活动名称', trigger: 'blur' },
           { min: 3, max: 10, message: '长度在 3 到 5 个字符', trigger: 'blur' }
         ],
-        number:[
+        number: [
           { required: true, message: '队伍数量不能为空'},
           { type: 'number', message: '队伍数量必须为数字值'}
         ]
       },
       currentNum: '1',
       titleOperator: '操作界面',
-      isBuild:false,
+      isBuild: false,
       num: 1,
       startEnd: true,
-      list:40,
-      randomData: [1234,2345,3456,4567,5567],
+      list: 40,
+      randomData: [1234, 2345, 3456, 4567, 5567],
       zhuchiData: [
-      {
-        name: '我是战队1的队号',
-        addreduce: '',
-        score: '53',
-      },
-      {
-        name: '我是战队1的队号的对号队号',
-        addreduce: '',
-        score: '53',
-      },
-      {
-        name: '我是战队1的队号',
-        addreduce: '',
-        score: '53',
-      },
-      {
-        name: '我是战队1的队号的对号队号',
-        addreduce: '',
-        score: '53',
-      }]
+        {
+          name: '我是战队1的队号',
+          addreduce: '',
+          score: '53'
+        },
+        {
+          name: '我是战队1的队号的对号队号',
+          addreduce: '',
+          score: '53'
+        },
+        {
+          name: '我是战队1的队号',
+          addreduce: '',
+          score: '53'
+        },
+        {
+          name: '我是战队1的队号的对号队号',
+          addreduce: '',
+          score: '53'
+        }]
     }
   },
   methods: {
     handleChange(value) {
-      alert(value);
+      alert(value)
     }
   }
 }
@@ -177,7 +177,7 @@ export default {
 .compute-top{
   padding: 10px;
   font-size: 15px;
-  text-align: center; 
+  text-align: center;
 }
 .compute-bottom{
   padding: 10px 0px;

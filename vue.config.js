@@ -30,22 +30,42 @@ module.exports = {
       filename: 'screen.html',
       title: 'screen',
       chunks: ['screen']
+    },
+    index: {
+      entry: 'src/pages/index.js',
+      template: 'public/index.html',
+      filename: 'index.html',
+      title: 'index',
+      chunks: ['index']
     }
   },
   productionSourceMap: false,
   chainWebpack: config => {
-    config.module.rules.delete('svg')
-    config.module
-      .rule('svg-sprite-loader')
-      .test(/\.svg$/)
-    //   .include
-    //   .add() //处理svg目录
-      .end()
+    // svg是个基础loader
+    const svgRule = config.module.rule('svg')
+    // 清除已有的所有 loader。
+    // 如果你不这样做，接下来的 loader 会附加在该规则现有的 loader 之后。
+    svgRule.uses.clear()
+
+    // 添加要替换的 loader
+    svgRule
       .use('svg-sprite-loader')
       .loader('svg-sprite-loader')
       .options({
-        symbolId: 'icon-[name]',
-        include: ['src/icons']
+        symbolId: 'icon-[name]'
       })
+    // config.module.rules.delete('svg')
+    // config.module
+    //   .rule('svg-sprite-loader')
+    //   .test(/\.svg$/)
+    // //   .include
+    // //   .add() //处理svg目录
+    //   .end()
+    //   .use('svg-sprite-loader')
+    //   .loader('svg-sprite-loader')
+    //   .options({
+    //     symbolId: 'icon-[name]',
+    //     include: ['src/icons']
+    //   })
   }
 }

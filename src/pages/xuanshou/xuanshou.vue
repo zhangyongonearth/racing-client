@@ -1,5 +1,5 @@
 <template>
-  <div class="main-xuanshou">  
+  <div class="main-xuanshou">
     <!-- 登录成功后显示的界面 -->
     <div v-if="isExist" class="success">
       <el-row :span="4" class="header-title">
@@ -18,8 +18,8 @@
           </el-row>
         </div>
         <div class="button-ok"><el-button class="button-submit" type="danger" :disabled="btnChangeEnable" @click="submitAnswer()">确定</el-button></div>
-      </el-card></el-row> 
-    </div>  
+      </el-card></el-row>
+    </div>
 
     <!-- 进行登录 -->
     <div v-else>
@@ -51,21 +51,21 @@
 </template>
 
 <script>
-const allOptions = ['A', 'B', 'C', 'D','E'];
+const allOptions = ['A', 'B', 'C', 'D', 'E']
 export default {
-  name: "player",
-  data () {
+  name: 'player',
+  data() {
     return {
-      raceToken:'789313',//开始比赛的
+      raceToken: '789313', // 开始比赛的
       teamName: '组名',
-      teamToken:'8719',//队伍的口令
-      btnChangeEnable:false,
-      isExist:false,//判定输入的teamToken是否存在于localstorage
+      teamToken: '8719', // 队伍的口令
+      btnChangeEnable: false,
+      isExist: false, // 判定输入的teamToken是否存在于localstorage
       teamScore: '分数',
       currentNumber: '5',
       checkboxGroup1: ['A'],
       options: allOptions,
-      activedToken:'', //已经抢到答题权的队伍
+      activedToken: '', // 已经抢到答题权的队伍
       form: {
         teamName: '',
         teamToken: ''
@@ -73,18 +73,18 @@ export default {
       // 表单验证，需要在 el-form-item 元素中增加 prop 属性
       rules: {
         teamName: [
-          {required: true, message: '账号不可为空', trigger: 'blur'}
+          { required: true, message: '账号不可为空', trigger: 'blur' }
         ],
         teamToken: [
-          {required: true, message: '口令不可为空', trigger: 'blur'}
+          { required: true, message: '口令不可为空', trigger: 'blur' }
         ]
       },
       // 对话框显示和隐藏
       dialogVisible: false
-    };
+    }
   },
-  mounted(){
-    //从localstorage中插叙是否有token，teamName，如果没有，就显示填写密令和起名的功能。如果有token，进入答题界面
+  mounted() {
+    // 从localstorage中插叙是否有token，teamName，如果没有，就显示填写密令和起名的功能。如果有token，进入答题界面
     // 答题界面显示出来之后，仍然是有可能禁用
   },
   methods: {
@@ -93,12 +93,12 @@ export default {
       this.$refs[formName].validate((valid) => {
         if (valid) {
           // 将组名和token存起来
-          
+
         } else {
-          this.dialogVisible = true;
-          return false;
+          this.dialogVisible = true
+          return false
         }
-      });
+      })
     }
   }
 }

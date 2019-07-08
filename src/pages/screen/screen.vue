@@ -25,7 +25,7 @@
         stripe
         highlight-current-row
         :default-sort = "{prop: 'score', order: 'descending'}">
-        
+
         <el-table-column
           type="index"
           label="排名"
@@ -47,7 +47,7 @@
           label="答案"
           align="center">
           <template>
-            
+
           </template>
         </el-table-column>
       </el-table>
@@ -59,38 +59,38 @@
 <script>
 export default {
   name: 'screen',
-  data(){
+  data() {
     return {
-      raceToken:'',
-      activedTeamToken:'8719',//哪个组号抢到了答题权
-      raceName:'竞赛的名称',
+      raceToken: '',
+      activedTeamToken: '8719', // 哪个组号抢到了答题权
+      raceName: '竞赛的名称',
       isAnswerShow: true,
-      isLight:true,
-      answer:'A',
-      question: '<h1>今天是几号？</h1><br /> <h2>A 1</h2><br /> <h2>B 2</h2><br /> <h2>C 3</h2><br /> <h2>D 4</h2>',   
+      isLight: true,
+      answer: 'A',
+      question: '<h1>今天是几号？</h1><br /> <h2>A 1</h2><br /> <h2>B 2</h2><br /> <h2>C 3</h2><br /> <h2>D 4</h2>',
       tableData: [
-      {
-        teamToken:'8917',
-        name: 'karroy1',
-        score: '53',
-        answer: 'ABCDE'
-      },
-      {
-        teamToken:'6634',
-        name: 'karroy2',
-        score: '45',
-        answer: 'ABCD'
-      },
-      {
-        teamToken:'6634',
-        name: 'karroy3',
-        score: '20',
-        answer: 'ABC'
-      }]
+        {
+          teamToken: '8917',
+          name: 'karroy1',
+          score: '53',
+          answer: 'ABCDE'
+        },
+        {
+          teamToken: '6634',
+          name: 'karroy2',
+          score: '45',
+          answer: 'ABCD'
+        },
+        {
+          teamToken: '6634',
+          name: 'karroy3',
+          score: '20',
+          answer: 'ABC'
+        }]
     }
   },
-  computed:{
-    
+  computed: {
+
   }
 }
 </script>
@@ -107,7 +107,7 @@ export default {
 }
 .header{
   margin:10px 40px;
-} 
+}
 .header-text{
   text-align: center;
   font-size: 30px;
