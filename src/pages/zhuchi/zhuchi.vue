@@ -50,14 +50,11 @@
           label="加分/减分"
           width="150px"
           align="center">
-          <el-input-number class="input-number" size="mini" v-model="num" @change="handleChange(value)" :min="1" :max="10" label="加减分">
+          <template slot-scope="scope" >
+            <el-input-number class="input-number" size="mini" v-model="scope.row.score" @change="handleChange()" label="分数">
           </el-input-number>
-        </el-table-column>
-        <el-table-column
-          prop="score"
-          label="分数"
-          width="50px"
-          align="center">
+          </template>
+
         </el-table-column>
       </el-table>
     </el-row>
@@ -96,7 +93,6 @@ export default {
       currentNum: '1',
       titleOperator: '操作界面',
       isBuild: false,
-      num: 1,
       startEnd: true,
       list: 40,
       randomData: [1234, 2345, 3456, 4567, 5567],
@@ -126,7 +122,41 @@ export default {
   methods: {
     handleChange(value) {
       alert(value)
+    },
+    login(zhuchiToken) {
+
+    },
+    getState() {
+      // 获取比赛信息
+      return {
+        config: {
+          raceName: '践行社会主核心价值观你追我赶之知识竞赛',
+          teamCount: 5,
+          teamTokens: ['1902', '1992', '2893', '8961'],
+          beginTime: Date.now(), // 时间戳，后台返回的
+          raceMode: 0 // 竞赛模式：0抢答，1
+        }, teams: [
+          {token: '', name: '', score: 0}
+        ]
+      }
+    },
+    nextQuestion() {
+
+    },
+    changeScore(teamToken, newValue) {
+      // changeValue = 1 | -1
     }
+  },
+  mounted() {
+    /**
+     * 1、去localstortage中查询是否有zhuchiToken
+     * 2、如果有则自动查询该zhuchiToken是否有效（methods：login）
+     * 3、如果第二步的自动登陆失败，则显示登陆组件（只需要输入zhuchiToken）
+     * 4、登陆（methods：login）
+     * 5、查询是否比赛信息（methods：getState）
+     * 6、如果第5步中获取的信息，没有进行中的比赛，则显示创建比赛的组件
+     * 7、如果有已经进行的比赛，则显示比赛界面
+     */
   }
 }
 </script>
