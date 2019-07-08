@@ -32,5 +32,20 @@ module.exports = {
       chunks: ['screen']
     }
   },
-  productionSourceMap: false
+  productionSourceMap: false,
+  chainWebpack: config => {
+    config.module.rules.delete('svg')
+    config.module
+      .rule('svg-sprite-loader')
+      .test(/\.svg$/)
+    //   .include
+    //   .add() //处理svg目录
+      .end()
+      .use('svg-sprite-loader')
+      .loader('svg-sprite-loader')
+      .options({
+        symbolId: 'icon-[name]',
+        include: ['src/icons']
+      })
+  }
 }
