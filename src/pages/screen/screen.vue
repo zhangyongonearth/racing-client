@@ -92,7 +92,7 @@ export default {
       time: '30:12',
       activedRace: '',
       activedTeamToken: '8719', // 哪个组号抢到了答题权
-      raceName: '党建知识竞赛',
+      raceName: '践行社会主核心价值观你追我赶之知识竞赛',
       isLight: true,
       correctAnswer: 'AB',
       answer: '',
@@ -175,8 +175,8 @@ export default {
       var data = this.getdata()
       this.tableData.name = data.config.tableData.name
       this.correctAnswer = data.config.correctAnswer
-      this.raceName = data.config.info.raceName
-      this.apartment = data.config.info.apartment
+      // this.raceName = data.config.info.raceName
+      // this.apartment = data.config.info.apartment
       this.currentNum = data.config.currentNum
       this.question = data.config.question
       // 什么时候显示答案
@@ -195,7 +195,7 @@ export default {
         config: {
           info: [
             {raceName: '践行社会主核心价值观你追我赶之知识竞赛',
-              apartment: ''}
+              apartment: '网络软件研发部'}
           ],
           beginTime: Date.now(), // 时间戳，后台返回的
           currentNum: 0,
