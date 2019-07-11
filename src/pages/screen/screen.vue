@@ -4,7 +4,7 @@
   <el-row :span="6" class="header">
     <div class="header-main">
       <el-col :span="1" >
-        <img class="header-img" src="./images/logo1.png">
+        <img class="header-img" src="./images/logo.png">
       </el-col>
       <el-col :span="15" class="header-left">
         <div class="header-text">{{raceName}}</div>
@@ -23,7 +23,8 @@
         </el-row>
         <el-row class="header-right-bottom">
           <el-col :span="12">{{useTime}}</el-col>
-          <el-col :span="12" id="showtime">{{time}}</el-col>
+          <el-col :span="12" class="showtime">
+            <span class="ues-time">{{minute}}</span>:<span class="ues-time">{{second}}</span></el-col>
         </el-row>
       </el-col>
   </div>
@@ -53,8 +54,14 @@
         <el-table-column
           type="index"
           label="排名"
-          width="120px"
+          width="250px"
           align="center">
+        </el-table-column>
+        <el-table-column
+          width="120px">
+          <template>
+            <svg-icon icon-class="img"></svg-icon>
+          </template>
         </el-table-column>
         <el-table-column
           prop="name"
@@ -62,6 +69,7 @@
           align="center">
         </el-table-column>
         <el-table-column
+          class="bg-green"
           prop="score"
           label="分数"
           align="center">
@@ -86,38 +94,18 @@ export default {
   name: 'screen',
   data() {
     return {
-      apartment: '网络软件研发部',
-      data: '2019-07-10',
+      apartment: '',
       useTime: '比赛用时',
-      time: '30:12',
-      activedRace: '',
+      minute: '',
+      second: '',
       activedTeamToken: '8719', // 哪个组号抢到了答题权
-      raceName: '践行社会主核心价值观你追我赶之知识竞赛',
-      isLight: true,
-      correctAnswer: 'AB',
+      raceName: '',
+      correctAnswer: '',
       answer: '',
-      currentNum: 0,
+      currentNum: null,
       showAnswer: true,
       question: '中国共产党性质是什么？<br /> A、中国共产党是中国工人阶级的先锋队<br /> B 中国人民和中华民族的先锋队<br /> C 中国特色社会主义事业的领导核心<br /> D 代表中国先进生产力的发展要求，代表中国先进文化的前进方向，代表中国最广大人民的根本利益',
-      tableData: [
-        {
-          teamToken: '8917',
-          name: 'karroy1',
-          score: '53',
-          answer: 'ABCDE'
-        },
-        {
-          teamToken: '6634',
-          name: 'karroy2',
-          score: '45',
-          answer: 'ABCD'
-        },
-        {
-          teamToken: '6634',
-          name: 'karroy3',
-          score: '20',
-          answer: 'ABC'
-        }],
+      tableData: [{}],
       backImage: {
         backgroundImage: 'url(' + require('./images/back.png') + ')',
         backgroundRepeat: 'no-repeat',
@@ -155,38 +143,55 @@ export default {
   methods: {
     // 从后台传过来的数据
     tableRowClassName({row, rowIndex}) {
-      if (rowIndex === 1) {
+      if (rowIndex % 2 === 0) {
         return 'warning-row'
-      } else if (rowIndex === 3) {
+      } else {
         return 'success-row'
       }
-      return ''
     },
+    // 把时间转换成分秒
     computeTime() {
-      const date1 = new Date()
-      var hour = date1.getHours()
-      var minute = date1.getMinutes()
-      var second = date1.getSeconds()
-      //  第一种方法：与返回得到的begintime相减得到用时
-      // 第2种方法：打开页面直接从0：0位置增加
-      this.time = hour + ':' + minute + ':' + second
+      var data = this.getdata()
+      const startTime = data.config.beginTime // 得到毫秒
+      const endTime = new Date().getTime()
+      var mss = endTime - startTime
+      // let days = parseInt(mss / (1000 * 60 * 60 * 24)) // 得到天数
+      // let hours = parseInt((mss % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)) // 得到小时
+      const m = parseInt((mss % (1000 * 60 * 60)) / (1000 * 60)) // 得到分钟数
+      const s = (mss % (1000 * 60)) / 1000 // 得到秒数
+      // return days + '天' + hours + ':' + minutes + ':' + seconds // 返回值
+      const minutes = Math.floor(m)
+      const seconds = Math.floor(s)
+      const str1 = minutes < 10 ? ('0' + minutes) : minutes
+      const str2 = seconds < 10 ? ('0' + seconds) : seconds
+      this.minute = str1
+      this.second = str2// 输出结果为00：30
     },
     login() {
       var data = this.getdata()
-      this.tableData.name = data.config.tableData.name
+      this.tableData = data.config.tableData
       this.correctAnswer = data.config.correctAnswer
-      // this.raceName = data.config.info.raceName
-      // this.apartment = data.config.info.apartment
+      this.raceName = data.config.info[0].raceName
+      this.apartment = data.config.info[0].apartment
       this.currentNum = data.config.currentNum
       this.question = data.config.question
-      // 什么时候显示答案
-      // 在显示答案前，只显示第一个抢答这的答案。显示答案后，获取所有人的答案
+      this.showAnswer = data.config.showAnswer
       if (this.showAnswer === false) {
-        if (this.tableData.teamToken === data.config.firstAnswer.teamToken) {
-          this.tableData.answer = data.config.firstAnswer.answer
+        // 遍历所有队的teamToken，找到与第一个传过来的teamtoken比较。若相同则把答案放在该teamToken组中
+        for (var i = 0, l = data.config.tableData.length; i < l; i++) {
+          if (data.config.tableData[i]['teamToken'] === data.config.firstAnswer[0].teamToken) {
+            data.config.tableData[i]['answer'] = data.config.firstAnswer[0].answer
+          }
         }
       } else {
-        this.tableData = data.config.allAnswer
+        // 将所有答案都传过来
+        for (var j = 0, l1 = data.config.tableData.length; j < l1; j++) {
+          for (var k = 0, l2 = data.config.allAnswer.length; k < l2; k++) {
+            if (data.config.tableData[j]['teamToken'] === data.config.allAnswer[k]['teamToken']) {
+              data.config.tableData[j]['answer'] = data.config.allAnswer[k].answer
+            }
+          }
+        }
       }
     },
     getdata() {
@@ -194,34 +199,50 @@ export default {
       return {
         config: {
           info: [
-            {raceName: '践行社会主核心价值观你追我赶之知识竞赛',
-              apartment: '网络软件研发部'}
+            {
+              raceName: '践行社会主核心价值观你追我赶之知识竞赛',
+              apartment: '网络软件研发部'
+            }
           ],
-          beginTime: Date.now(), // 时间戳，后台返回的
-          currentNum: 0,
+          beginTime: 0,
+          // beginTime: Date.now(), // 时间戳，后台返回的
+          currentNum: 66,
           question: '中国共产党性质是什么？<br /> A、中国共产党是中国工人阶级的先锋队<br /> B 中国人民和中华民族的先锋队<br /> C 中国特色社会主义事业的领导核心<br /> D 代表中国先进生产力的发展要求，代表中国先进文化的前进方向，代表中国最广大人民的根本利益',
           correctAnswer: 'ABCE',
-          firstAnswer: [{teamToken: '', answer: ''}],
+          showAnswer: true, // 主持界面点击显示答案时传过来的值
+          firstAnswer: [{teamToken: '6666', answer: 'ABC'}],
           allAnswer: [{teamToken: '', answer: ''}],
           tableData: [
             // {teamToken: '', name: '', score: 0, answer: ''}
             {
-              teamToken: '8917',
-              name: 'karroy1',
+              teamToken: '0921',
+              name: '小分队',
               score: '53',
-              answer: 'ABCDE'
+              answer: 'A'
             },
             {
-              teamToken: '6634',
-              name: 'karroy2',
+              teamToken: '1108',
+              name: '加油队123',
+              score: '45',
+              answer: 'AB'
+            },
+            {
+              teamToken: '1128',
+              name: '强强联盟',
+              score: '20',
+              answer: 'ABC'
+            },
+            {
+              teamToken: '6666',
+              name: '薛定谔的猫',
               score: '45',
               answer: 'ABCD'
             },
             {
-              teamToken: '6634',
-              name: 'karroy3',
+              teamToken: '0715',
+              name: '@未来可期 事无蹉跎',
               score: '20',
-              answer: 'ABC'
+              answer: 'ABCDE'
             }
           ]
         }
@@ -230,12 +251,20 @@ export default {
   },
   mounted() {
     this.login()
-    this.computeTime()
+    this.computeTime() // 这有个问题就是数据不能实时显示。
   },
   watch: {
-    // 作用：监听比赛名称和队伍数量的变化
+    // 作用：监听用时变化
+    'time': function(newVal) {
+      this.time = newVal
+    },
     'currentNum': function(newVal) {
+      // 监测到题号发生变化时，正确答案不显示，各组的答案也不显示
       this.currentNum = newVal
+      // this.showAnswer = false
+      // for (var i = 0, l = this.tableData.length; i < l; i++) {
+      //   this.tableData[i]['answer'] = ''
+      // }
     }
   }
 }
@@ -271,8 +300,17 @@ export default {
   display: inline;
   line-height: 15vh;
 }
-.el-date-editor.el-input{
-  width: 250px!important;
+.el-input__inner{
+  width: 260px!important;
+  height: 80px!important;
+}
+.showtime{
+  font-size: 100px;
+}
+.ues-time{
+  color: #ff0000;
+  background:#fff;
+  font-size: 70px;
 }
 .grid-content{
   margin: 20px 40px auto 40px;
@@ -312,6 +350,7 @@ export default {
   font-size: 70px;
 }
 .right-bottom{
+  /* font-family:sans-serif; */
   padding: 50px 80px;
   border-bottom-right-radius:25px;
   border-bottom-left-radius:25px;
@@ -319,21 +358,25 @@ export default {
   background:rgba(255,255,255,0.1);
 }
 .el-table .warning-row {
-  background: oldlace;
+  background: #F9AB00;
 }
 .el-table .success-row {
-  background: #f0f9eb;
+  background: #ffffff;
 }
 .table{
   border-radius: 0px;
-  /* margin: 30px 50px auto 50px; */
   padding: 0;
 }
-tr{
-  height: 100px;
+.el-table .cell{
+  line-height: 100px!important;
 }
-.cell{
-  height: 80px;
-  line-height: 80px;
+.bg-green{
+  color: green
+}
+.el-table__row{
+  height: 8vh;
+}
+th{
+  height: 150px;
 }
 </style>
