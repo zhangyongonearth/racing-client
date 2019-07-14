@@ -1,355 +1,314 @@
 <template>
-<div class="main-screen">
-  <!-- 主持人输入口令登录界面 -->
-  <div v-if="isValid">
-    <el-form :model="zhuchiFrom" ref="zhuchiFrom" label-width="100px" class="demo-raceFrom zhuchiLoginForm">
-      <h3 class="login-title"><svg-icon class="icon-login" icon-class="welcome"></svg-icon>欢迎登录</h3>
-      <el-form-item
-        label="口令"
-        prop="zhuchiToken"
-        :rules="[
-            { required: true, message: '口令不能为空'},
-            { type: 'number', message: '口令必须为数字值'}
-          ]">
-        <el-input type="Token" placeholder="请输入口令" v-model.number="zhuchiFrom.zhuchiToken"/>
-      </el-form-item>
-      <el-form-item>
-        <el-button type="primary" v-on:click="zhuchiForm('zhuchiFrom')">登录</el-button>
-      </el-form-item>
-    </el-form>
+<div class="main-zhuchi">
+  <!-- 主持登录界面 -->
+  <div v-if="showOne" class="zhuchi-one">
+    <van-row :span="4" class="row-icon">
+      <svg-icon icon-class="cup"></svg-icon>
+      <div class="one-platform">{{platform}}</div>
+    </van-row>
+    <van-row :span="5" type="flex" justify="center" class="row-name">
+      <van-col :span="5">
+        <van-tag
+        color="#cd2323"
+        class="left racename-left">竞赛名称</van-tag>
+      </van-col>
+      <van-col :span="15">
+        <van-field
+          v-model="raceName"
+          border
+          type="string"
+          placeholder="点击输入文本"
+          class="right racename-right">{{raceName}}</van-field>
+      </van-col>
+    </van-row>
+    <van-row :span="5" type="flex" justify="center" class="row-name team-number">
+      <van-col :span="5">
+        <van-tag
+        color="#cd2323"
+        class="left teamNumber-left">战队个数</van-tag>
+      </van-col>
+      <van-col :span="15">
+        <van-stepper
+          integer
+          v-model="setNumber"
+          input-width="60px"
+          button-size="50px"
+          class="teamNumber-right"
+        />
+      </van-col>
+    </van-row>
+    <van-row :span="2" class="row-gettoken">
+      <van-col offset="12" span="12"><van-button :disabled="isCreate" class="gettoken-button" @click="getTokens">生成口令</van-button></van-col>
+    </van-row>
+    <van-row :span="4" class="row-tokens" gutter="20" type="flex" justify="center">
+      <van-col class="random-value" v-for="(random) in tokens" v-bind:key="random"><u>{{random}}</u></van-col>
+    </van-row>
+    <van-row :span="4" class="row-start">
+      <van-button round class="one-start" :disabled="isStart" @click="start">开始竞赛</van-button>
+    </van-row>
   </div>
-
-  <!-- 创建竞赛，包括竞赛名称、队伍数量、随机数 -->
-  <div v-else-if="isBuild">
-    <el-form :model="raceFrom" :rules="rules" ref="raceFrom" label-width="100px" class="demo-raceFrom">
-       <h3 class="login-title"><svg-icon class="icon-login" icon-class="welcome"></svg-icon>随机数生成</h3>
-      <el-form-item label="竞赛名称" prop="racename">
-        <el-input placeholder="请输入竞赛名称" v-model="raceFrom.racename"></el-input>
-      </el-form-item>
-      <el-form-item label="队伍数量" prop="racenumber">
-        <el-input placeholder="请输入队伍数量" v-model="raceFrom.racenumber"></el-input>
-      </el-form-item>
-      <div class="button-create">
-        <el-button type="primary" :disabled="isChuangjian" @click="submitForm('raceFrom')">创建</el-button>
-      </div>
-    </el-form>
-
-    <el-row class="random-table">
-      <div class="random-value" v-for="(random) in randomData" v-bind:key="random">
-        <svg-icon icon-class="flag"></svg-icon><u>{{random}}</u> </div>
-      <div class="button-start"><el-button v-show="startEnd" type="primary" :disabled="isAble" @click="start()">开始</el-button></div>
-    </el-row>
-  </div>
-  <!-- 创建比赛后，比分、翻题界面 -->
-  <div v-else>
-    <el-row :span="10" class="compute compute-top">
-      <el-row :span="8" class="title title-subject">
-        <el-row>进行时长：<el-button class="button-current" type="success">{{duration}}</el-button></el-row>
-        <el-row>当前题号：<el-button class="button-current" type="success">{{currentNum}}</el-button></el-row>
-      </el-row>
-      <el-row>
-        <el-button type="primary" @click="showAnswer()">显示答案</el-button>
-        <el-button type="primary" @click="nextQuestion()">下一题</el-button>
-        <el-button v-show="startEnd" type="primary" @click="end()">答题结束</el-button>
-      </el-row>
-    </el-row>
-    <el-row :span="10" class="compute compute-bottom">
-      <el-row :span="4" class="title title-compute">
-        <svg-icon icon-class="compute"></svg-icon>分数</el-row>
+  <!-- 主持人操作界面 -->
+  <div v-else class="zhuchi-two">
+    <van-row :span="4" class="row-number">
+      <span>
+        第<span class="two-currentNumber">{{currentNumber}}</span>题
+      </span>
+    </van-row>
+    <van-row :span="2" type="flex" justify="space-around" class="row-btn">
+        <van-col span="9">
+          <van-button plain class="btn" :disabled="isBtn" @click="showAnswer">显示答案</van-button>
+        </van-col>
+        <van-col span="9">
+          <van-button plain class="btn" :disabled="!isBtn" @click="nextNumber">下一题</van-button>
+        </van-col>
+    </van-row>
+    <van-row :span="2" class="row-title">
+      <el-col :span="12">
+        <svg-icon class="compute-icon" icon-class="compute"></svg-icon>战队计分
+      </el-col>
+    </van-row>
+    <van-row :span="10">
       <el-table
-        stripe
         highlight-current-row
-        :data="teamData">
+        :data="computeData">
         <el-table-column
-          prop="name"
-          label="组名"
+          prop="teamName"
+          label="战队名称"
           align="center">
         </el-table-column>
         <el-table-column
-          prop="add_reduce"
-          label="加分/减分"
-          width="150px"
+          label="分数"
           align="center">
-          <template slot-scope="scope" >
-            <el-input-number class="input-number" size="mini" v-model="scope.row.score" @change="handleChange()" label="分数">
-          </el-input-number>
+          <template slot-scope="scope">
+            <van-stepper
+              integer
+              v-model="scope.row.teamScore"
+              @change="changeValue"
+              input-width="40px"
+              button-size="40px"
+              class="teamNumber-right"
+              />
           </template>
-
         </el-table-column>
-      </el-table>
-    </el-row>
+        </el-table>
+    </van-row>
+    <van-row :span="4" class="row-end">
+        <van-button :disabled="isEnd" class="two-start" @click="endRace">结束竞赛</van-button>
+    </van-row>
   </div>
 </div>
 </template>
 
 <script>
 export default {
-  /**
-   * 创建竞赛：输入队伍数量N、竞赛名称，输出N个随机数
-   * 测试：测试各队伍连接
-   * 开始：创建完竞赛之后，点击开始才显示题目，以及翻题按钮、结束按钮、
-   * 翻题：
-   * 结束：与开始按钮互斥显示
-   * 改分：点击改分的时候，显示队伍列表和改分
-   */
-  name: 'zhuchi',
   data() {
-    var checkNum = (rule, value, callback) => {
-      if (!value) {
-        return callback(new Error('不能为空'))
-      } else {
-        if (!Number.isInteger(value)) {
-          callback(new Error('请输入数字值'))
-        }
-        callback()
-      }
-    }
     return {
-      activedRace: '789313', // 从localstorage中获取，如果有该值，
-      isValid: true,
-      zhuchiToken: '234567',
-      zhuchiFrom: {
-        zhuchiToken: ''
-      },
-      raceFrom: {
-        racename: '',
-        racenumber: ''
-      },
-      rules: {
-        racename: [
-          { required: true, message: '请输入活动名称', trigger: 'blur' },
-          { min: 1, max: 50, message: '长度在 1 到 50 个字符', trigger: 'blur' }
-        ],
-        racenumber: [
-          { required: true, message: '请输入队伍数量', trigger: 'blur'},
-          { validator: checkNum, trigger: 'blur' }
-        ]
-      },
-      currentNum: 1,
-      duration: '11:23',
-      isBuild: true,
-      isAble: true,
-      isChuangjian: false,
-      startEnd: true,
-      randomData: [],
-      teamData: [
-        {
-          name: '我是战队1的队号',
-          score: '53'
-        },
-        {
-          name: '我是战队1的队号的对号队号',
-          score: '53'
-        },
-        {
-          name: '我是战队1的队号',
-          score: '53'
-        },
-        {
-          name: '我是战队1的队号的对号队号',
-          score: '53'
-        }]
+      showOne: true, // true为登录界面，false为操作界面
+      platform: '知识竞赛平台',
+      raceName: '',
+      setNumber: 5,
+      teamNumber: 0,
+      isCreate: false, // 生成口令按钮 false可点击
+      isStart: true, // 开始比赛按钮 false可点击
+      tokens: [],
+      currentNumber: 15,
+      isBtn: false, // 为true时“下一题”按钮可点击，为false时“显示答案”按钮可点击
+      isEnd: false, // 为false时结束竞赛”按钮可点击，为true不可点击
+      computeData: [],
+      show_answer: false
     }
   },
   methods: {
-    // 主持人输入口令登陆
-    zhuchiForm(formName) {
-      this.$refs[formName].validate((valid) => {
-        if (valid) {
-          localStorage.setItem('主持人口令', this.zhuchiFrom.zhuchiToken)
-          this.isValid = false
-          this.isBuild = true
-        } else {
-          return false
+    getTokens() {
+      var data = this.getdata().config
+      if (this.raceName !== '' && this.setNumber !== null) {
+        const loginInfo = {
+          'raceName': this.raceName,
+          'setNumber': this.setNumber
         }
-      })
-    },
-    // 创建比赛 名称 队伍数量 随机数
-    submitForm(formName) {
-      this.$refs[formName].validate((valid) => {
-        if (valid) {
-          // local保存有比赛token 比赛名称 队伍数量
-          localStorage.setItem('activedRace', this.activedRace)
-          const raceInfo = {
-            'racename': this.raceFrom.racename,
-            'racenumber': this.raceFrom.racenumber
-          }
-          localStorage.setItem('创建比赛', JSON.stringify(raceInfo))
-          this.randomData = this.getRandom(this.raceFrom.racenumber)
-          this.isAble = false
-          this.isChuangjian = true
-        } else {
-          return false
-        }
-      })
-    },
-    login(zhuchiToken, activedRace) {
-      if (localStorage.getItem('主持人口令') === zhuchiToken) {
-        // 验证是否有正在进行的比赛
-        if (localStorage.getItem('activedRace') === activedRace) {
-          // 若有返回正在比赛的信息，显示比赛界面
-          this.isValid = false
-          this.isBuild = false
-          this.getState()
-        } else {
-          // 若没有正在进行的比赛，返回到创建比赛的界面
-          this.isValid = false
-          this.isBuild = true
-        }
-      } else {
-        // 否则主持人登录界面
-        this.isValid = true
-        this.isBuild = true
+        localStorage.setItem('战队个数', JSON.stringify(loginInfo))
+        this.tokens = data.tokens
+        this.isCreate = true
+        this.isStart = false
       }
     },
-    getState() {
-      // 获取比赛信息
-      return {
-        config: {
-          raceName: '践行社会主核心价值观你追我赶之知识竞赛',
-          teamCount: 5,
-          teamTokens: ['1902', '1992', '2893', '8961'],
-          beginTime: Date.now(), // 时间戳，后台返回的
-          raceMode: 0 // 竞赛模式：0抢答，1
-        }, teams: [
-          {token: '', name: '', score: 0}
-        ]
-      }
-    },
-    // 根据比赛队员数量，生成4位随机数
-    rand(min, max) {
-      return Math.floor(Math.random() * (max - min)) + min
-    },
-    getRandom(i) {
-      while (i--) {
-        this.randomData.push(this.rand(1000, 9999))
-      }
-      console.log('随机数' + this.randomData)
-      return this.randomData
-    },
-    // 点击开始，比赛分数界面。点击答题结束，回到创建比赛界面
     start() {
-      this.isValid = false
-      this.isBuild = false
-    },
-    end() {
-      this.isValid = false
-      this.isBuild = true
-      this.currentNum = 1
-      localStorage.removeItem('创建比赛')
-      localStorage.removeItem('activedRace')
+      this.showOne = false
     },
     showAnswer() {
-      // 把isAnswerShow=true传到主持界面
+      // 显示答案按钮点击后，传到后台一个布尔类型的值show_answer来控制screen界面的是否显示答案
+      this.show_answer = true
+      this.isBtn = !this.isBtn
     },
-    nextQuestion() {
-      // 把question传到主持界面
-      this.currentNum += 1
+    nextNumber() {
+      // ???加数字1而不是字符串1
+      this.currentNumber += 1
+      this.isBtn = !this.isBtn
     },
-    handleChange(value) {
-      return value
+    changeValue(value) {
+      this.computeData.teamScore = value
+      // 将战队分数和口令绑定在一起。发送到后台，后台发到screen界面
+      // ？？？如何绑定在一起存储。
+      const scoreInfo = {
+        'teamToken': this.computeData.teamToken,
+        'teamScore': this.computeData.teamScore
+      }
+      localStorage.setItem('战队分数', JSON.stringify(scoreInfo))
     },
-    changeScore(teamToken, newValue) {
-      // changeValue = 1 | -1
+    endRace() {
+      this.isEnd = true
+    },
+    login() {
+      var data = this.getdata().config
+      var data1 = JSON.parse(localStorage.getItem('战队个数'))
+      if (data1.raceName !== '' && data1.setNumber !== '') {
+        this.showOne = false
+        this.computeData = data.computeData
+      }
+    },
+    getdata() {
+      /**
+       * 要传到后台数据:
+       * raceName
+       * show_answer 控制答案显示
+       * currentNumber
+       * teamToken+teamScore
+       */
+      // 从后台得到的数据如下
+      return {
+        config: {
+          tokens: ['0921', '1108', '1128', '6666', '0715'],
+          computeData: [
+            {
+              teamToken: '0921',
+              teamName: '小分队',
+              teamScore: '1'
+            },
+            {
+              teamToken: '1108',
+              teamName: '加油队123',
+              teamScore: '1'
+            },
+            {
+              teamToken: '1128',
+              teamName: '强强联盟',
+              teamScore: '1'
+            },
+            {
+              teamToken: '6666',
+              teamName: '薛定谔的猫',
+              teamScore: '1'
+            },
+            {
+              teamToken: '0715',
+              teamName: '@未来可期 事无蹉跎',
+              teamScore: '1'
+            }
+          ]
+        }
+      }
     }
   },
   mounted() {
-    this.login('1234', '789313')
-    /**
-     * 1、去localstortage中查询是否有zhuchiToken
-     * 2、如果有则自动查询该zhuchiToken是否有效（methods：login）
-     * 3、如果第二步的自动登陆失败，则显示登陆组件（只需要输入zhuchiToken）
-     * 4、登陆（methods：login）
-     * 5、查询是否比赛信息（methods：getState）
-     * 6、如果第5步中获取的信息，没有进行中的比赛，则显示创建比赛的组件
-     * 7、如果有已经进行的比赛，则显示比赛界面
-     */
-  },
-  watch: {
-    // 作用：监听比赛名称和队伍数量的变化
-    'raceFrom.racename': function(newVal) {
-      this.raceFrom.racename = newVal
-      this.isChuangjian = false
-      this.randomData = []
-      this.isAble = true
-    },
-    'raceFrom.racenumber': function(newVal) {
-      this.raceFrom.racenumber = newVal
-      this.isChuangjian = false
-      this.randomData = []
-      this.isAble = true
-    }
+    this.login()
   }
 }
 </script>
 
 <style>
-.main-zhuchi{
-  background-color: #f5f5f5;
+.row-number{
+  background:#cd2323;
+  font-size: 30px;
+  color:#fff;
+  padding: 3vh;
+  margin-bottom: 2vh;
 }
-.demo-raceFrom{
-  border: 1px solid #DCDFE6;
-  margin: 80px auto 10px auto;
-  padding: 35px 35px 15px 35px;
-  border-radius: 5px;
-  -webkit-border-radius: 5px;
-  -moz-border-radius: 5px;
-  /* box-shadow: 0 0 5px #909399; */
+.two-currentNumber{
+  color: #cd2323;
+  background: #fff;
+  padding: 0 15px;
+  margin: 0 25px;
 }
-.login-title {
-  text-align: center;
-  margin: 0 auto 40px auto;
-  color: #000;
+.btn{
+  width: 18vh;
+  border:1px solid #cd2323!important;
+  color:#cd2323!important;
 }
-.random-table{
-  border: 1px solid #DCDFE6;
-  margin: auto;
-  padding: 30px 50px 30px 50px;
-  border-radius: 5px;
-  -webkit-border-radius: 5px;
-  -moz-border-radius: 5px;
-  text-align: center;
+.btn:focus{
+  background: #cd2323;
+  color:#fff!important;
 }
-.random-value{
-  display: inline;
-  padding-top:20px;
-}
-.button-create{
-  text-align: center;
-}
-.button-start{
-  margin-top:20px;
-}
-.compute{
-  border: 1px solid #DCDFE6;
-  border-radius: 5px;
-  -webkit-border-radius: 5px;
-  -moz-border-radius: 5px;
-}
-.compute-top{
-  padding: 10px;
-  font-size: 15px;
-  text-align: center;
-}
-.compute-bottom{
-  padding: 10px 0px;
-}
-.title{
+.row-title{
+  text-align: left!important;
+  color: #cd2323;
+  float: left;
   font-size: 20px;
-  text-align: center;
+  margin: 2vh auto 0 4vh;
+  width: 100vh;
 }
-.el-row {
-  margin-bottom: 10px;
+.compute-icon{
+  font-size: 30px!important;
+  margin-right: 10px;
 }
-.el-row:last-child {
-  margin-bottom: 0;
+.two-start{
+  height: 7vh!important;
+  font-size: 18px!important;
+  width: 40vh!important;
+  background: #cd2323!important;
+  color: #fff!important;
 }
-.icon-login{
-  font-size: 40px;
+.row-end{
+  padding-top:3vh;
 }
 .svg-icon{
-  margin-right: 5px;
-  font-size: 25px;
-  fill:#000;
+  font-size: 180px;
+}
+.row-icon{
+  text-align: center;
+  padding-top: 6vh;
+}
+.one-platform{
+  font-size: 40px;
+  color: #cd2323;
+}
+.van-row{
+  text-align: center;
+}
+.van-col--5{
+  width: auto!important;
+}
+.van-tag{
+  background-color: rgb(205, 35, 35)!important;
+  line-height: 24px!important;
+  font-size: 12px!important;
+  padding: 10px 15px!important;
+  border-radius: 0em!important;
+  border: 1px solid #cd2323;
+}
+.right{
+  border: 1px solid #cca;
+}
+.row-name{
+  padding: 8vh 0 4vh 0;
+}
+.team-number{
+  padding: 0;
+}
+.row-gettoken{
+  margin: 2vh 0;
+}
+.gettoken-button{
+  color: #cd2323!important;
+  border: none!important;
+}
+.row-start{
+  padding-top:8vh;
+}
+.one-start{
+  height: 7vh!important;
+  font-size: 18px!important;
+  width: 40vh!important;
+  background: #cd2323!important;
+  color: #fff!important;
 }
 </style>

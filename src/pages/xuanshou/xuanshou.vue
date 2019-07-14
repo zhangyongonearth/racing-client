@@ -1,212 +1,317 @@
 <template>
-  <div class="main-xuanshou">
-    <!-- 登录成功后显示的界面 -->
-    <div v-if="isExist" class="success">
-      <el-row :span="4" class="header-title">
-        <svg-icon icon-class="emblem"></svg-icon>{{raceName}}</el-row>
-      <el-row :span="20"><el-card class="box-card">
-        <div slot="header" class="clearfix">
-            <span><span id = "group-name">{{teamName}}</span>:<span id= "group-score">{{teamScore}}</span></span>
-            <span style="float:right" class="titleNum">第 <span id = "current-number">{{currentNumber}}</span> 题</span>
-        </div>
-        <div>
-          <el-row class ="option">
-            <el-checkbox-group v-model="checkedData">
-              <el-checkbox-button class="checkbox-option" v-for="option in options" :label="option" :key="option">{{option}}
-              </el-checkbox-button>
-            </el-checkbox-group>
-          </el-row>
-        </div>
-        <div class="button-ok"><el-button class="button-submit" type="danger" :disabled="isOk" @click="submitAnswer">确定</el-button></div>
-        <div>提交的答案：<span>{{checkedAnswer}}</span></div>
-      </el-card></el-row>
-    </div>
-
-    <!-- 进行登录 -->
-    <div v-else>
-      <el-form ref="loginForm" :model="form" :rules="rules" label-width="80px" class="login-box">
-        <h3 class="login-title"><svg-icon class="icon-login" icon-class="welcome"></svg-icon>欢迎登录</h3>
-        <el-form-item label="队名" prop="teamName">
-          <el-input type="text" placeholder="请输入队名" v-model="form.teamName"/>
-        </el-form-item>
-        <el-form-item label="口令" prop="teamToken">
-          <el-input type="teamToken" placeholder="请输入口令" v-model="form.teamToken"/>
-        </el-form-item>
-        <el-form-item>
-          <el-button type="primary" :disabled="isLogin" v-on:click="onSubmit('loginForm')">登录</el-button>
-        </el-form-item>
-      </el-form>
-
-      <el-dialog
-        title="温馨提示"
-        :visible.sync="dialogVisible"
-        width="50%"
-        >
-        <span>请输入账号和口令</span>
-        <span slot="footer" class="dialog-footer">
-          <el-button type="primary" @click="dialogVisible = false">确 定</el-button>
-        </span>
-      </el-dialog>
-    </div>
+<div class="main-xuanshou">
+  <!-- 选手登录界面 -->
+  <div v-if="showOne" class="xuanshou-one">
+      <van-row :span="4" class="row-icon">
+        <svg-icon icon-class="cup"></svg-icon>
+        <div class="one-racename">{{raceName}}</div>
+      </van-row>
+      <van-row :span="5" type="flex" justify="center" class="row-name">
+        <van-col :span="5">
+          <van-tag
+          color="#cd2323"
+          class="left teamname-left">战队名称</van-tag>
+        </van-col>
+        <van-col :span="15">
+          <van-field
+            v-model="teamName"
+            border
+            type="string"
+            placeholder="点击输入文本"
+            class="right teamname-right">{{teamName}}</van-field>
+        </van-col>
+      </van-row>
+      <van-row :span="5" type="flex" justify="center" class="row-token">
+        <van-col :span="5">
+          <van-tag
+          color="#cd2323"
+          class="left teamToken-left">战队口令</van-tag>
+        </van-col>
+        <van-col :span="15">
+        <van-field
+          v-model="teamToken"
+          border
+          type="number"
+          placeholder="点击输入文本"
+          class="right teamToken-right"></van-field>
+        </van-col>
+      </van-row>
+      <van-row :span="4" class="row-start">
+        <van-button round class="one-start" @click="start">开始答题</van-button>
+      </van-row>
   </div>
+  <!-- 选项界面 -->
+  <div v-else class="xuanshou-two">
+    <van-row class="row-number">
+      <span>
+        第<span class="two-currentNumber">{{currentNumber}}</span>题
+      </span>
+    </van-row>
+    <van-row type="flex" justify="space-between" class="row-options">
+      <van-col class="col-options">
+        <van-button id="btnA" :disable="notClickA" @click="clickA" class="option-button">A</van-button>
+        <van-button id="btnB" :disable="notClickB" @click="clickB" class="option-button">B</van-button>
+        <van-button id="btnC" :disable="notClickC" @click="clickC" class="option-button">C</van-button>
+        <van-button id="btnD" :disable="notClickD" @click="clickD" class="option-button">D</van-button>
+        <van-button id="btnE" :disable="notClickE" @click="clickE" class="option-button">E</van-button>
+      </van-col>
+    </van-row>
+    <van-row :span="4" class="row-start">
+        <van-button round :disabled="isSubmit" class="two-start" @click="submit">提交</van-button>
+    </van-row>
+  </div>
+</div>
 </template>
 
 <script>
 export default {
-  name: 'player',
   data() {
     return {
-      raceToken: '', // 开始比赛的
-      teamName: '队名',
-      teamToken: '8719', // 队伍的口令
-      raceName: '',
-      // isLogin: true,
-      isOk: false,
-      dialogVisible: false, // 对话框显示和隐藏
-      isExist: false, // 判定输入的teamToken是否存在于localstorage
-      teamScore: '分数',
-      currentNumber: '5',
-      checkedData: [],
-      checkedAnswer: null,
-      options: ['A', 'B', 'C', 'D', 'E'],
-      activedToken: '', // 已经抢到答题权的队伍
-      form: {
-        teamName: '',
-        teamToken: ''
-      },
-      // 表单验证，需要在 el-form-item 元素中增加 prop 属性
-      rules: {
-        teamName: [
-          { required: true, message: '账号不可为空', trigger: 'blur' }
-        ],
-        teamToken: [
-          { required: true, message: '口令不可为空', trigger: 'blur' }
-        ]
-      }
+      showOne: true, // true为登录界面，false为选项界面
+      raceName: '党建知识竞赛',
+      teamName: '',
+      teamToken: '',
+      currentNumber: 15,
+      teamAnswer: [], // 存放选手选择的答案
+      notClickA: false, // true不可点击
+      notClickB: false, // true不可点击
+      notClickC: false, // true不可点击
+      notClickD: false, // true不可点击
+      notClickE: false, // true不可点击
+      isSubmit: false // true不可点击
     }
   },
   methods: {
-    onSubmit(formName) {
-      this.$refs[formName].validate((valid) => {
-        if (valid) {
-          const teamInfo = {
-            'teamName': this.form.teamName,
-            'teamToken': this.form.teamToken
+    clickA() {
+      this.teamAnswer.push('A')
+      document.getElementById('btnA').style.backgroundColor = '#f9ab00'
+      document.getElementById('btnA').style.color = '#fff'
+      if (this.notClickA === true) {
+        for (var i = 0; i < this.teamAnswer.length; i++) {
+          if (this.teamAnswer[i] === 'A') {
+            this.teamAnswer.splice(i, 1)
+            document.getElementById('btnA').style.backgroundColor = '#fff'
+            document.getElementById('btnA').style.color = '#000'
           }
-          localStorage.setItem('各队信息', JSON.stringify(teamInfo))
-          this.isExist = true
-        } else {
-          this.dialogVisible = true
-          return false
         }
-      })
-    },
-    submitAnswer() {
-      this.checkedAnswer = this.checkedData.join(' ')
-      console.log(this.checkedData.join(' '))
-      const scoreInfo = {
-        'teamName': this.form.teamName,
-        'teamToken': this.form.teamToken,
-        'answer': this.checkedAnswer
       }
-      localStorage.setItem('答案信息', JSON.stringify(scoreInfo))
-      this.isOk = true
+      this.notClickA = !this.notClickA
+      console.log('1111' + this.teamAnswer)
     },
-    login(teamName, teamToken) {
-      var data = JSON.parse(localStorage.getItem('各队信息'))
-      var data1 = JSON.parse(localStorage.getItem('答案信息'))
-      var data2 = this.getState()
-      // 若获取到后台传过来的raceToken，则保存。下次刷新页面的时候判断如果有racetoken，说明有正在进行比赛
-      localStorage.setItem('raceToken', data2.config.raceToken)
-      console.log(data)
-      if (data.teamName && data.teamToken) {
-        if (localStorage.getItem('raceToken')) {
-          // 如有正在进行的比赛，则为比赛的界面
-          console.log(localStorage.getItem('raceToken'))
-          this.teamName = data.teamName
-          this.isExist = true
-          this.raceName = data2.config.raceNmae
-          this.teamScore = data2.config.teamScore
-          this.currentNumber = data2.config.currentNumber
-          this.checkedAnswer = data1.answer
-          this.isOk = true
-        } else {
-          // 若没有正在进行的比赛 则只可留在登录界面
-          this.isExist = false
-          this.isLogin = true
-          alert('当前比赛还未开始！')
+    clickB() {
+      this.teamAnswer.push('B')
+      document.getElementById('btnB').style.backgroundColor = '#f9ab00'
+      document.getElementById('btnB').style.color = '#fff'
+      if (this.notClickB === true) {
+        for (var i = 0; i < this.teamAnswer.length; i++) {
+          if (this.teamAnswer[i] === 'B') {
+            this.teamAnswer.splice(i, 1)
+            document.getElementById('btnB').style.backgroundColor = '#fff'
+            document.getElementById('btnB').style.color = '#000'
+          }
         }
+      }
+      this.notClickB = !this.notClickB
+      console.log('1111' + this.teamAnswer)
+    },
+    clickC() {
+      this.teamAnswer.push('C')
+      document.getElementById('btnC').style.backgroundColor = '#f9ab00'
+      document.getElementById('btnC').style.color = '#fff'
+      if (this.notClickC === true) {
+        for (var i = 0; i < this.teamAnswer.length; i++) {
+          if (this.teamAnswer[i] === 'C') {
+            this.teamAnswer.splice(i, 1)
+            document.getElementById('btnC').style.backgroundColor = '#fff'
+            document.getElementById('btnC').style.color = '#000'
+          }
+        }
+      }
+      this.notClickC = !this.notClickC
+      console.log('1111' + this.teamAnswer)
+    },
+    clickD() {
+      this.teamAnswer.push('D')
+      document.getElementById('btnD').style.backgroundColor = '#f9ab00'
+      document.getElementById('btnD').style.color = '#fff'
+      if (this.notClickD === true) {
+        for (var i = 0; i < this.teamAnswer.length; i++) {
+          if (this.teamAnswer[i] === 'D') {
+            this.teamAnswer.splice(i, 1)
+            document.getElementById('btnD').style.backgroundColor = '#fff'
+            document.getElementById('btnD').style.color = '#000'
+          }
+        }
+      }
+      this.notClickD = !this.notClickD
+      console.log('1111' + this.teamAnswer)
+    },
+    clickE() {
+      this.teamAnswer.push('E')
+      document.getElementById('btnE').style.backgroundColor = '#f9ab00'
+      document.getElementById('btnE').style.color = '#fff'
+      if (this.notClickE === true) {
+        for (var i = 0; i < this.teamAnswer.length; i++) {
+          if (this.teamAnswer[i] === 'E') {
+            this.teamAnswer.splice(i, 1)
+            document.getElementById('btnE').style.backgroundColor = '#fff'
+            document.getElementById('btnE').style.color = '#000'
+          }
+        }
+      }
+      this.notClickE = !this.notClickE
+      console.log('1111' + this.teamAnswer)
+    },
+    start() {
+      var existToken = false
+      var data = this.getdata().config
+      // 判断输入token是否存在于tokens
+      for (var i = 0; i < data.tokens.length; i++) {
+        if (data.tokens[i] === this.teamToken) {
+          existToken = true
+        }
+      }
+      if (this.teamName !== '' && existToken === true) {
+        const teamInfo = {
+          'teamName': this.teamName,
+          'teamToken': this.teamToken
+        }
+        localStorage.setItem('战队信息', JSON.stringify(teamInfo))
+        this.showOne = false
       } else {
-        this.isExist = false
+        return false
       }
     },
-    getState() {
-      // 从后台获取数据
+    submit() {
+      // 提交 所选答案+战队口令（口令从localStorage中获取）传给后台。后台再发送到screen界面
+      // ???有点小问题 选项界面刷新出点问题
+      var data1 = JSON.parse(localStorage.getItem('战队信息'))
+      this.teamToken = data1.teamToken
+      const answerInfo = {
+        'teamToken': this.teamToken,
+        'teamAnswer': this.teamAnswer
+      }
+      localStorage.setItem('战队答案', JSON.stringify(answerInfo))
+      this.isSubmit = true// 提交答案后，按钮不可点击，当题号变化时才可
+      const str = true
+      localStorage.setItem('按钮状态', str)
+    },
+    login() {
+      // 若teamName和teamToken不为空，进入到选项界面
+      var data = this.getdata().config
+      var data1 = JSON.parse(localStorage.getItem('战队信息'))
+      var data2 = localStorage.getItem('按钮状态')
+      console.log('true' + data2)
+      if (data1.teamName !== '' && data1.teamToken !== '') {
+        this.showOne = false
+        this.currentNumber = data.currentNumber
+        if (data2 === true) {
+          this.isSubmit = true
+          console.log('true' + this.isSubmit)
+        } else {
+          this.isSubmit = false
+          console.log('false')
+        }
+      }
+    },
+    getdata() {
+      /**
+       * 要传到后台数据:
+       * teamName+teamToken
+       * teamToken+teamAnswer
+       */
+      // 从后台得到的数据如下
       return {
         config: {
-          raceNmae: '比赛名称1234567',
-          teamScore: '45',
-          currentNumber: '5',
-          raceToken: '1234'
+          tokens: ['0921', '1108', '1128', '6666', '0715'],
+          currentNumber: 22
         }
       }
     }
   },
   mounted() {
-    this.login('队伍名称', '1234')
-    // 从localstorage中插叙是否有token，teamName，如果没有，就显示填写密令和起名的功能。如果有token，进入答题界面
-    // 答题界面显示出来之后，仍然是有可能禁用
+    this.login()
   },
   watch: {
     'currentNumber': function(newVal) {
       this.currentNumber = newVal
-      this.Ok = false
-      localStorage.removeItem('答案信息')
+      this.isSubmit = false
     }
   }
 }
 </script>
 
 <style>
-.login-box {
-  border: 1px solid #DCDFE6;
-  margin: 180px auto;
-  padding: 35px 35px 15px 35px;
-  border-radius: 5px;
-  -webkit-border-radius: 5px;
-  -moz-border-radius: 5px;
-  /* box-shadow: 0 0 5px #909399; */
+.svg-icon{
+  font-size: 180px;
 }
-
-.login-title {
+.row-icon{
   text-align: center;
-  margin: 0 auto 40px auto;
-  color: #000;
+  padding-top: 12vh;
 }
-.success{
-  border-radius: 5px;
-  height: 100vh;
-}
-.header-title{
-  font-size: 30px;
-  text-align: center;
-  padding-top: 90px;
-  padding-bottom: 40px;
-}
-.option{
-  padding-top:30px;
-  padding-bottom: 40px;
-  text-align: center;
-}
-.button-ok{
-  text-align: center;
-  margin-bottom: 40px;
-}
-.button-submit{
-  width: 180px;
-  height: 50px;
-}
-.icon-login{
+.one-racename{
   font-size: 40px;
+  color: #cd2323;
 }
+.van-row{
+  text-align: center;
+}
+.van-col--5{
+  width: auto!important;
+}
+.van-tag{
+  background-color: rgb(205, 35, 35)!important;
+  line-height: 24px!important;
+  font-size: 12px!important;
+  padding: 10px 15px!important;
+  border-radius: 0em!important;
+  border: 1px solid #cd2323;
+}
+.right{
+  border: 1px solid #cca;
+}
+.row-name{
+  padding: 8vh 0 4vh 0;
+}
+.row-start{
+  padding-top:8vh;
+}
+.one-start{
+  height: 7vh!important;
+  font-size: 18px!important;
+  width: 40vh!important;
+  background: #cd2323!important;
+  color: #fff!important;
+}
+.row-number{
+  background:#cd2323;
+  font-size: 30px;
+  color:#fff;
+  padding: 8vh;
+  margin-bottom: 8vh;
+}
+.two-currentNumber{
+  color: #cd2323;
+  background: #fff;
+  padding: 0 15px;
+  margin: 0 25px;
+}
+.two-start{
+  height: 7vh!important;
+  font-size: 18px!important;
+  width: 40vh!important;
+  background: #cd2323!important;
+  color: #fff!important;
+}
+.option-button{
+  font-size: 35px!important;
+  width: 40vh;
+  background: lightcoral;
+  border: 1px solid #000!important;
+  margin: 1.5vh!important;
+}
+/* .button-option:focus{
+  color:#fff;
+  background: #f9ab00;
+} */
 </style>

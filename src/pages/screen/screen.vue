@@ -1,6 +1,6 @@
 <template>
-<div class="main-zhuchi" :style="backImage">
-  <!-- 还有4个小时。标题栏 -->
+<div class="main-zhuchi">
+  <!-- 标题栏 -->
   <el-row :span="6" class="header">
     <div class="header-main">
       <el-col :span="1" >
@@ -27,7 +27,7 @@
     <!-- 题目问题 答案 -->
     <el-col :span="12"><div class="grid-content grid-content-left">
       <el-row :span="4" class="border title title-question">
-        <svg-icon icon-class="file"></svg-icon>题目:{{currentNum}}
+        <svg-icon icon-class="file"></svg-icon>题目:{{currentNumber}}
       </el-row>
       <el-row :span="18" id="question-sizeof" class="border opacity question"><div v-html="question"></div></el-row>
       <el-row :span="2" class="border opacity correct-answer">
@@ -43,7 +43,6 @@
             result-img=''
             cover-color='#caa'>
             <div class="scratch-card-result" slot='result'>{{correctAnswer}}</div>
-              <!-- <slot >{{correctAnswer}}</slot> -->
           </vue-scratch-card>
         </el-col>
       </el-row>
@@ -70,12 +69,11 @@
           align="center">
           <template slot-scope="scope">
             <svg-icon style="float:left" icon-class="img"></svg-icon>
-            <span>{{scope.row.name}}</span>
+            <span>{{scope.row.teamName}}</span>
           </template>
         </el-table-column>
         <el-table-column
-          class="bg-green"
-          prop="score"
+          prop="teamScore"
           label="分数"
           align="center">
         </el-table-column>
@@ -83,15 +81,7 @@
           label="答案"
           align="center">
           <template slot-scope="scope">
-            <vue-scratch-card
-              class="scratch-card2"
-              element-id='scratchWrap2'
-              :ratio='0.9'
-              :move-radius='15'
-              result-img=''
-              cover-color='#cca'>
-              <span class="scratch-card-result2" slot='result'>{{scope.row.answer}}</span>
-            </vue-scratch-card>
+            <div id="all-answer" class="all-answer">{{scope.row.teamAnswer}}</div>
           </template>
         </el-table-column>
         </el-table>
@@ -111,24 +101,18 @@ export default {
       useTime: '比赛用时',
       minute: '',
       second: '',
-      activedTeamToken: '8719', // 哪个组号抢到了答题权
       raceName: '',
       correctAnswer: '',
-      answer: '',
-      currentNum: null,
-      showAnswer: true,
+      teamAnswer: '',
+      currentNumber: null,
+      showAnswer: false,
       question: '中国共产党性质是什么？<br /> A、中国共产党是中国工人阶级的先锋队<br /> B 中国人民和中华民族的先锋队<br /> C 中国特色社会主义事业的领导核心<br /> D 代表中国先进生产力的发展要求，代表中国先进文化的前进方向，代表中国最广大人民的根本利益',
-      tableData: [{}],
-      backImage: { // 我放在css里面，怎么都不行
-        backgroundImage: 'url(' + require('./images/back.png') + ')',
-        backgroundRepeat: 'no-repeat',
-        backgroundSize: '100% 100%'
-      }
+      tableData: [{}]
     }
   },
   methods: {
     startCallback() {
-      console.log('抽奖成功！')
+      console.log('开始刮卡！')
     },
     clearCallback() {
       console.log('清除完毕！')
@@ -146,11 +130,8 @@ export default {
       const startTime = data.config.beginTime // 得到毫秒
       const endTime = new Date().getTime()
       var mss = endTime - startTime
-      // let days = parseInt(mss / (1000 * 60 * 60 * 24)) // 得到天数
-      // let hours = parseInt((mss % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)) // 得到小时
       const m = parseInt((mss % (1000 * 60 * 60)) / (1000 * 60)) // 得到分钟数
       const s = (mss % (1000 * 60)) / 1000 // 得到秒数
-      // return days + '天' + hours + ':' + minutes + ':' + seconds // 返回值
       const minutes = Math.floor(m)
       const seconds = Math.floor(s)
       const str1 = minutes < 10 ? ('0' + minutes) : minutes
@@ -162,17 +143,30 @@ export default {
       var data = this.getdata()
       this.tableData = data.config.tableData
       this.correctAnswer = data.config.correctAnswer
-      this.raceName = data.config.info[0].raceName
-      this.apartment = data.config.info[0].apartment
-      this.currentDate = data.config.info[0].currentDate
-      this.currentNum = data.config.currentNum
+      this.raceName = data.config.titleData[0].raceName
+      this.apartment = data.config.titleData[0].apartment
+      this.currentDate = data.config.titleData[0].currentDate
+      this.currentNumber = data.config.currentNumber
       this.question = data.config.question
+      console.log(this.question.length)
+      if (this.question.length < 150) {
+        document.getElementById('question-sizeof').style.lineHeight = '200px'
+      } else if (this.question.length >= 150 && this.question.length <= 250) {
+        document.getElementById('question-sizeof').style.lineHeight = '150px'
+      } else if (this.question.length > 250) {
+        document.getElementById('question-sizeof').style.lineHeight = '100px'
+      }
       this.showAnswer = data.config.showAnswer
+      /**
+       * 现在实现的效果是：
+       * 当主持人没有点击显示答案时，只显示第一个抢答人的答案。
+       * 当主持人点击显示答案时，显示所有人的答案以及正确答案。清除刮刮卡，则显示正确答案。
+       * */
       if (this.showAnswer === false) {
         // 遍历所有队的teamToken，找到与第一个传过来的teamtoken比较。若相同则把答案放在该teamToken组中
         for (var i = 0, l = data.config.tableData.length; i < l; i++) {
           if (data.config.tableData[i]['teamToken'] === data.config.firstAnswer[0].teamToken) {
-            data.config.tableData[i]['answer'] = data.config.firstAnswer[0].answer
+            data.config.tableData[i]['teamAnswer'] = data.config.firstAnswer[0].teamAnswer
           }
         }
       } else {
@@ -180,17 +174,20 @@ export default {
         for (var j = 0, l1 = data.config.tableData.length; j < l1; j++) {
           for (var k = 0, l2 = data.config.allAnswer.length; k < l2; k++) {
             if (data.config.tableData[j]['teamToken'] === data.config.allAnswer[k]['teamToken']) {
-              data.config.tableData[j]['answer'] = data.config.allAnswer[k].answer
+              data.config.tableData[j]['teamAnswer'] = data.config.allAnswer[k].teamAnswer
             }
           }
         }
       }
     },
     getdata() {
-      // 需要从后台获取的数据
+      /**
+       * 要传到后台数据:无
+       */
+      // 从后台得到的数据如下
       return {
         config: {
-          info: [
+          titleData: [
             {
               raceName: '践行社会主核心价值观知识竞赛',
               apartment: '网络软件研发部部门',
@@ -199,65 +196,64 @@ export default {
           ],
           beginTime: 0,
           // beginTime: Date.now(), // 时间戳，后台返回的
-          currentNum: 66,
+          currentNumber: 66,
           question: '中国共产党性质是什么？<br /> A、中国共产党是中国工人阶级的先锋队<br /> B 中国人民和中华民族的先锋队<br /> C 中国特色社会主义事业的领导核心<br /> D 代表中国先进生产力的发展要求，代表中国先进文化的前进方向，代表中国最广大人民的根本利益',
           correctAnswer: 'ABCDE',
-          showAnswer: true, // 主持界面点击显示答案时传过来的值
-          firstAnswer: [{teamToken: '6666', answer: 'ABC'}],
+          showAnswer: false, // 主持界面点击显示答案时传过来的值 fasle时只传第一个回答者答案，true所有人答案
+          firstAnswer: [{teamToken: '6666', teamAnswer: 'ABC'}],
           allAnswer: [
-            // {teamToken: '', answer: ''}
+            // {teamToken: '', teamAnswer: ''}
             {
               teamToken: '0921',
-              answer: 'A'
+              teamAnswer: 'A'
             },
             {
               teamToken: '1108',
-              answer: 'AB'
+              teamAnswer: 'AB'
             },
             {
               teamToken: '1128',
-              answer: 'ABC'
+              teamAnswer: 'ABC'
             },
             {
               teamToken: '6666',
-              answer: 'ABCD'
+              teamAnswer: 'ABCD'
             },
             {
               teamToken: '0715',
-              answer: 'ABCDE'
+              teamAnswer: 'ABCDE'
             }
           ],
           tableData: [
-            // {teamToken: '', name: '', score: 0, answer: ''}
             {
               teamToken: '0921',
-              name: '小分队',
-              score: '53',
-              answer: ''
+              teamName: '小分队',
+              teamScore: '53',
+              teamAnswer: ''
             },
             {
               teamToken: '1108',
-              name: '加油队123',
-              score: '45',
-              answer: ''
+              teamName: '加油队123',
+              teamScore: '45',
+              teamAnswer: ''
             },
             {
               teamToken: '1128',
-              name: '强强联盟',
-              score: '20',
-              answer: ''
+              teamName: '强强联盟',
+              teamScore: '20',
+              teamAnswer: ''
             },
             {
               teamToken: '6666',
-              name: '薛定谔的猫',
-              score: '45',
-              answer: ''
+              teamName: '薛定谔的猫',
+              teamScore: '45',
+              teamAnswer: ''
             },
             {
               teamToken: '0715',
-              name: '@未来可期 事无蹉跎',
-              score: '20',
-              answer: ''
+              teamName: '@未来可期 事无蹉跎',
+              teamScore: '20',
+              teamAnswer: ''
             }
           ]
         }
@@ -267,19 +263,18 @@ export default {
   mounted() {
     this.login()
     this.computeTime() // 这有个问题就是数据不能实时显示。
-    // this.sizeof(this.question, 'utf-8')
   },
   watch: {
     // 作用：监听用时变化
     'time': function(newVal) {
       this.time = newVal
     },
-    'currentNum': function(newVal) {
+    'currentNumber': function(newVal) {
       // 监测到题号发生变化时，正确答案不显示，各组的答案也不显示
-      this.currentNum = newVal
+      this.currentNumber = newVal
       // this.showAnswer = false
       // for (var i = 0, l = this.tableData.length; i < l; i++) {
-      //   this.tableData[i]['answer'] = ''
+      //   this.tableData[i]['teamAnswer'] = ''
       // }
     }
   }
@@ -288,7 +283,11 @@ export default {
 
 <style>
 .main-zhuchi{
-  height: 100vh;
+  width: 1280;
+  height: 720;
+  background: url('./images/back.png');
+  background-size: 100% 100%;
+  min-width:800px;
   color: #fff;
 }
 .header{
@@ -350,7 +349,6 @@ export default {
 .question{
   height: 50vh;
   font-size: 50px;
-  line-height: 100px;
   padding: 80px 100px;
   margin-bottom: 3vh;
 }
@@ -402,11 +400,7 @@ th{
   width: 500px!important;
   height: 10vh!important;
 }
-.scratch-card2{
-  width: 300px!important;
-  height: 5vh!important;
-}
-.scratch-card-result2{
+.all-answer{
   text-align: center;
 }
 .scratch-card-result{
