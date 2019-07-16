@@ -1,0 +1,192 @@
+function createClient(token, type, onmessage) {
+  var url = 'ws://192.168.2.1'// + location.host
+  if (type !== 'screen') { // judge, team
+    url += '?' + type + 'Token=' + token
+  }
+  var ws = new WebSocket(url)
+  ws.onopen = function() {
+    console.log('@open')
+  }
+
+  ws.onmessage = function(e) {
+    console.log('@message')
+    onmessage(e.data)
+  }
+  ws.onclose = function() {
+    console.log('@close')
+  }
+  ws.onerror = function() {
+    console.log('@error')
+  }
+  return ws
+}
+function Client(type) {
+  this.token = undefined
+  this.ws = undefined
+  this.type = type
+  this.login = function(token) {
+    if (this.ws && this.ws.readyState === this.ws.OPEN) {
+      if (this.token === token) {
+        return this
+      }
+      this.ws.close()
+    }
+    this.token = token
+    this.ws = createClient(token, this.type, this.onmessage)
+    return this
+  }
+  this.quit = function() {
+    this.ws.close()
+  }
+  this.onmessage = function(data) {
+    console.log(data)
+  }
+  this.send = function(json) {
+    if (this.type === 'team') {
+      json.data.teamToken = this.token
+    }
+    try {
+      this.ws.send(JSON.stringify(json))
+    } catch (e) {
+      this.login(this.token)
+      this.ws.send(JSON.stringify(json))
+    }
+  }
+}
+export function Judge() {
+  Client.call(this, 'judge')
+
+  this.initRace = function(raceName, teamCount, raceMode) {
+    this.send({action: 'initRace', data: {raceName, teamCount, raceMode}})
+  }
+  this.beginRace = function() {
+    this.send({action: 'beginRace'})
+  }
+  this.nextQuestion = function() {
+    this.send({action: 'nextQuestion'})
+  }
+  this.showAnswer = function(questionIndex) {
+    this.send({action: 'showAnswer', data: {questionIndex}})
+  }
+  this.changeScore = function(teamToken, teamScore) {
+    this.send({action: 'changeScore', data: {teamToken, teamScore}})
+  }
+  this.endRace = function() {
+    this.send({action: 'endRace'})
+  }
+  this.onmessage = function(resp) {
+    console.log('this is judge onmessage')
+    console.log(resp)
+    const { action, data} = JSON.parse(resp)
+    switch (action) {
+      case 'connect':
+        const {enableAnswer, questionIndex, updateTime, activeTeam, teams} = data
+        break
+      // case 'initRace':
+      //   const {teamTokens} = data
+      //   break
+      // case 'beginRace':
+      //   const { enableAnswer, beginTime, questionIndex } = data
+      //   break
+      // case 'nextQuestion':
+      //   const { questionIndex, question, score, updateTime, enableAnswer } = data
+      //   break
+      // // case 'showAnswer':
+      // //   const { answer, answers, enableAnswer } = data
+      // //   break
+      // // case 'changeScore':
+      // //   const { teams } = data
+      // //   break
+      // case 'endRace':
+      //   const  { enableAnswer, closed } = data
+      //   break
+      // case 'rename':
+      //   const { teams } = data
+      //   break
+      // // case 'answer':
+      // //   const { teamToken, activeTeam, enableAnswer } = data
+      // //   break
+    }
+  }
+}
+export function Team() {
+  Client.call(this, 'team')
+  this.answer = function(answer, questionIndex) {
+    this.send({ action: 'answer', data: {answer, questionIndex}})
+  }
+  this.rename = function(newName) {
+    this.send({ action: 'rename', data: {newName}})
+  }
+  this.onmessage = function(resp) {
+    console.log('this is team onmessage')
+    console.log(resp)
+    const { action, data} = JSON.parse(resp)
+    switch (action) {
+      // case 'connect':
+      //   const {enableAnswer, questionIndex, updateTime, activeTeam, teams} = data
+      //   break
+      // case 'initRace':
+      //   const {enableAnswer} = data
+      //   break
+      // case 'beginRace':
+      //   const { enableAnswer, beginTime, questionIndex } = data
+      //   break
+      // case 'nextQuestion':
+      //   const { questionIndex, question, score, updateTime, enableAnswer } = data
+      //   break
+      // case 'showAnswer':
+      //   const { answer, answers, enableAnswer } = data
+      //   break
+      // case 'changeScore':
+      //   const { teams } = data
+      //   break
+      // case 'endRace':
+      //   const  { enableAnswer, closed } = data
+      //   break
+      // // case 'rename':
+      // //   const { teams } = data
+      // //   break
+      case 'answer':
+        const { teamToken, activeTeam, enableAnswer } = data
+        break
+    }
+  }
+}
+export function Screen() {
+  Client.call(this, 'screen')
+
+  this.onmessage = function(resp) {
+    console.log('this is screen onmessage')
+    console.log(resp)
+    const { action, data} = JSON.parse(resp)
+    switch (action) {
+      case 'connect':
+        const {enableAnswer, questionIndex, updateTime, activeTeam, teams} = data
+        break
+      // case 'initRace':
+      //   const {raceName, raceMode, teamCount, beginTime, enableAnswer} = data
+      //   break
+      // case 'beginRace':
+      //   const { enableAnswer, beginTime, questionIndex } = data
+      //   break
+      // case 'nextQuestion':
+      //   const { questionIndex, question, score, updateTime, enableAnswer } = data
+      //   break
+      // case 'showAnswer':
+      //   const { answer, answers, enableAnswer } = data
+      //   break
+      // case 'changeScore':
+      //   const { teams } = data
+      //   break
+      // case 'endRace':
+      //   const  { enableAnswer, closed } = data
+      //   break
+      // case 'rename':
+      //   const { teams } = data
+      //   break
+      // case 'answer':
+      //   const { teamToken, activeTeam, enableAnswer } = data
+      //   break
+    }
+  }
+}

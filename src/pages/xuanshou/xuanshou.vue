@@ -1,7 +1,32 @@
 <template>
 <div class="main-xuanshou">
-  <!-- 选手登录界面 -->
-  <div v-if="showOne" class="xuanshou-one">
+  <!-- 选手口令界面 -->
+  <div v-if="type==='zero'" class="xuanshou-one">
+      <van-row :span="4" class="row-icon">
+        <svg-icon icon-class="cup"></svg-icon>
+        <div class="one-racename">{{raceName}}</div>
+      </van-row>
+      <van-row :span="5" type="flex" justify="center" class="row-name">
+        <van-col :span="5">
+          <van-tag
+          color="#cd2323"
+          class="left teamToken-left">战队口令</van-tag>
+        </van-col>
+        <van-col :span="15">
+        <van-field
+          v-model="teamToken"
+          border
+          type="number"
+          placeholder="点击输入文本"
+          class="right teamToken-right"></van-field>
+        </van-col>
+      </van-row>
+      <van-row :span="4" class="row-start">
+        <van-button round class="one-start" @click="tokenLogin">登录</van-button>
+      </van-row>
+  </div>
+  <!-- 选手名字界面 -->
+  <div v-else-if="type==='one'" class="xuanshou-one">
       <van-row :span="4" class="row-icon">
         <svg-icon icon-class="cup"></svg-icon>
         <div class="one-racename">{{raceName}}</div>
@@ -21,27 +46,12 @@
             class="right teamname-right">{{teamName}}</van-field>
         </van-col>
       </van-row>
-      <van-row :span="5" type="flex" justify="center" class="row-token">
-        <van-col :span="5">
-          <van-tag
-          color="#cd2323"
-          class="left teamToken-left">战队口令</van-tag>
-        </van-col>
-        <van-col :span="15">
-        <van-field
-          v-model="teamToken"
-          border
-          type="number"
-          placeholder="点击输入文本"
-          class="right teamToken-right"></van-field>
-        </van-col>
-      </van-row>
       <van-row :span="4" class="row-start">
         <van-button round class="one-start" @click="start">开始答题</van-button>
       </van-row>
   </div>
   <!-- 选项界面 -->
-  <div v-else class="xuanshou-two">
+  <div v-else-if="type==='two'" class="xuanshou-two">
     <van-row class="row-number">
       <span>
         第<span class="two-currentNumber">{{currentNumber}}</span>题
@@ -67,7 +77,8 @@
 export default {
   data() {
     return {
-      showOne: true, // true为登录界面，false为选项界面
+      type: 'zero',
+      // showOne: true, // true为登录界面，false为选项界面
       raceName: '党建知识竞赛',
       teamName: '',
       teamToken: '',
@@ -162,22 +173,28 @@ export default {
       this.notClickE = !this.notClickE
       console.log('1111' + this.teamAnswer)
     },
-    start() {
-      var existToken = false
-      var data = this.getdata().config
-      // 判断输入token是否存在于tokens
-      for (var i = 0; i < data.tokens.length; i++) {
-        if (data.tokens[i] === this.teamToken) {
-          existToken = true
-        }
+    tokenLogin() {
+      if (this.teamToken !== '') {
+        const teamToken = this.teamToken
+        localStorage.setItem('战队口令', teamToken)
+        this.type = 'one'
+      } else {
+        return false
       }
-      if (this.teamName !== '' && existToken === true) {
-        const teamInfo = {
-          'teamName': this.teamName,
-          'teamToken': this.teamToken
-        }
-        localStorage.setItem('战队信息', JSON.stringify(teamInfo))
-        this.showOne = false
+    },
+    start() {
+      // var existToken = false
+      // var data = this.getdata().config
+      // // 判断输入token是否存在于tokens
+      // for (var i = 0; i < data.tokens.length; i++) {
+      //   if (data.tokens[i] === this.teamToken) {
+      //     existToken = true
+      //   }
+      // }
+      if (this.teamName !== '') {
+        const teamName = this.teamName
+        localStorage.setItem('战队名字', teamName)
+        this.type = 'two'
       } else {
         return false
       }
@@ -185,7 +202,7 @@ export default {
     submit() {
       // 提交 所选答案+战队口令（口令从localStorage中获取）传给后台。后台再发送到screen界面
       // ???有点小问题 选项界面刷新出点问题
-      var data1 = JSON.parse(localStorage.getItem('战队信息'))
+      var data1 = localStorage.getItem('战队口令')
       this.teamToken = data1.teamToken
       const answerInfo = {
         'teamToken': this.teamToken,
@@ -197,21 +214,16 @@ export default {
       localStorage.setItem('按钮状态', str)
     },
     login() {
-      // 若teamName和teamToken不为空，进入到选项界面
       var data = this.getdata().config
-      var data1 = JSON.parse(localStorage.getItem('战队信息'))
-      var data2 = localStorage.getItem('按钮状态')
-      console.log('true' + data2)
-      if (data1.teamName !== '' && data1.teamToken !== '') {
-        this.showOne = false
+      var data1 = localStorage.getItem('战队口令')
+      var data2 = localStorage.getItem('战队名字')
+      if (!data1 && data1.teamToken === '') {
+        this.type = 'zero'
+      } else if (!data2 && data2.teamName === '') {
+        this.type = 'one'
+      } else {
+        this.type = 'two'
         this.currentNumber = data.currentNumber
-        if (data2 === true) {
-          this.isSubmit = true
-          console.log('true' + this.isSubmit)
-        } else {
-          this.isSubmit = false
-          console.log('false')
-        }
       }
     },
     getdata() {

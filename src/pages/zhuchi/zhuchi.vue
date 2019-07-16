@@ -1,10 +1,36 @@
 <template>
 <div class="main-zhuchi">
-  <!-- 主持登录界面 -->
-  <div v-if="showOne" class="zhuchi-one">
+  <!-- A主持登录界面 -->
+  <div v-if="type==='A'" class="zhuchi-one">
     <van-row :span="4" class="row-icon">
       <svg-icon icon-class="cup"></svg-icon>
       <div class="one-platform">{{platform}}</div>
+    </van-row>
+    <van-row :span="5" type="flex" justify="center" class="row-name">
+      <van-col :span="5">
+        <van-tag
+        color="#cd2323"
+        class="left racename-left">主持口令</van-tag>
+      </van-col>
+      <van-col :span="15">
+        <van-field
+          v-model="zhuchiToken"
+          border
+          type="number"
+          placeholder="点击输入文本"
+          class="right racename-right">
+        </van-field>
+       </van-col>
+    </van-row>
+    <van-row :span="4" class="row-start">
+      <van-button round class="one-start" @click="tokenLogin">登录</van-button>
+    </van-row>
+  </div>
+  <!-- B主持登录界面 -->
+  <div v-else-if="type==='B'" class="zhuchi-one">
+    <van-row :span="4" class="row-icon">
+      <svg-icon icon-class="cup"></svg-icon>
+      <div class="one-platform">网络软件研发部知识竞赛系统</div>
     </van-row>
     <van-row :span="5" type="flex" justify="center" class="row-name">
       <van-col :span="5">
@@ -44,11 +70,47 @@
       <van-col class="random-value" v-for="(random) in tokens" v-bind:key="random"><u>{{random}}</u></van-col>
     </van-row>
     <van-row :span="4" class="row-start">
-      <van-button round class="one-start" :disabled="isStart" @click="start">开始竞赛</van-button>
+      <van-button round class="one-start" :disabled="isStart" @click="setRace">生成竞赛</van-button>
     </van-row>
   </div>
-  <!-- 主持人操作界面 -->
-  <div v-else class="zhuchi-two">
+  <!-- C主持人操作-开始界面 -->
+  <div v-else-if="type==='C'" class="zhuchi-c">
+    <van-row :span="2" class="row-title">
+      <el-col :span="12">
+        <svg-icon class="compute-icon" icon-class="compute"></svg-icon>战队计分
+      </el-col>
+    </van-row>
+    <van-row :span="10">
+      <el-table
+        highlight-current-row
+        :data="computeData">
+        <el-table-column
+          prop="teamName"
+          label="战队名称"
+          align="center">
+        </el-table-column>
+        <el-table-column
+          label="分数"
+          align="center">
+          <template slot-scope="scope">
+            <van-stepper
+              integer
+              v-model="scope.row.teamScore"
+              @change="changeValue"
+              input-width="40px"
+              button-size="40px"
+              class="teamNumber-right"
+              />
+          </template>
+        </el-table-column>
+        </el-table>
+    </van-row>
+    <van-row :span="4" class="row-end">
+        <van-button class="two-start" @click="startRace">开始竞赛</van-button>
+    </van-row>
+  </div>
+    <!-- D主持人操作-结束界面 -->
+  <div v-else-if="type==='D'" class="zhuchi-two">
     <van-row :span="4" class="row-number">
       <span>
         第<span class="two-currentNumber">{{currentNumber}}</span>题
@@ -100,11 +162,12 @@
 </template>
 
 <script>
+import {Judge} from '../client'
 export default {
   data() {
     return {
-      showOne: true, // true为登录界面，false为操作界面
-      platform: '知识竞赛平台',
+      type: 'A',
+      zhuchiToken: '',
       raceName: '',
       setNumber: 5,
       teamNumber: 0,
@@ -115,10 +178,35 @@ export default {
       isBtn: false, // 为true时“下一题”按钮可点击，为false时“显示答案”按钮可点击
       isEnd: false, // 为false时结束竞赛”按钮可点击，为true不可点击
       computeData: [],
-      show_answer: false
+      show_answer: false,
+      judge: undefined
     }
   },
   methods: {
+    // 点击登录按钮的时候触发
+    handleLogin() {
+      this.judge.login(this.token)
+    },
+    loginCallback(data) {
+      const {enableAnswer, questionIndex, updateTime, activeTeam, teams} = data
+      console.log(enableAnswer, questionIndex, updateTime, activeTeam, teams)
+    },
+    handleInitRace() {
+
+    },
+    initRaceCallback(data) {
+
+    },
+    tokenLogin() {
+      if (this.zhuchiToken !== '') {
+        const zhuchiToken = this.zhuchiToken
+        localStorage.setItem('主持口令', zhuchiToken)
+        // this.judgeObj.login(this.zhuchiToken)
+        this.type = 'B'
+      } else {
+        return false
+      }
+    },
     getTokens() {
       var data = this.getdata().config
       if (this.raceName !== '' && this.setNumber !== null) {
@@ -132,8 +220,8 @@ export default {
         this.isStart = false
       }
     },
-    start() {
-      this.showOne = false
+    setRace() {
+      this.type = 'C'
     },
     showAnswer() {
       // 显示答案按钮点击后，传到后台一个布尔类型的值show_answer来控制screen界面的是否显示答案
@@ -155,6 +243,9 @@ export default {
       }
       localStorage.setItem('战队分数', JSON.stringify(scoreInfo))
     },
+    startRace() {
+      this.type = 'D'
+    },
     endRace() {
       this.isEnd = true
     },
@@ -162,55 +253,59 @@ export default {
       var data = this.getdata().config
       var data1 = JSON.parse(localStorage.getItem('战队个数'))
       if (data1.raceName !== '' && data1.setNumber !== '') {
-        this.showOne = false
+        // this.showOne = false
         this.computeData = data.computeData
       }
     },
     getdata() {
-      /**
-       * 要传到后台数据:
-       * raceName
-       * show_answer 控制答案显示
-       * currentNumber
-       * teamToken+teamScore
-       */
-      // 从后台得到的数据如下
-      return {
-        config: {
-          tokens: ['0921', '1108', '1128', '6666', '0715'],
-          computeData: [
-            {
-              teamToken: '0921',
-              teamName: '小分队',
-              teamScore: '1'
-            },
-            {
-              teamToken: '1108',
-              teamName: '加油队123',
-              teamScore: '1'
-            },
-            {
-              teamToken: '1128',
-              teamName: '强强联盟',
-              teamScore: '1'
-            },
-            {
-              teamToken: '6666',
-              teamName: '薛定谔的猫',
-              teamScore: '1'
-            },
-            {
-              teamToken: '0715',
-              teamName: '@未来可期 事无蹉跎',
-              teamScore: '1'
-            }
-          ]
-        }
-      }
+      console.log('getData')
     }
   },
   mounted() {
-    this.login()
+    this.judge = new Judge()
+    const self = this
+    window.vue = self
+    this.judge.onmessage = function(resp) {
+      // self.data
+      // self.methods
+      self.type = 'B'
+      self.getdata()
+      console.log('this is judge onmessage')
+      console.log(resp)
+      const { action, data} = JSON.parse(resp)
+      switch (action) {
+        case 'connect':
+          self.loginCallback(data)
+          break
+      // case 'initRace':
+      //   const {teamTokens} = data
+      //   break
+      // case 'beginRace':
+      //   const { enableAnswer, beginTime, questionIndex } = data
+      //   break
+      // case 'nextQuestion':
+      //   const { questionIndex, question, score, updateTime, enableAnswer } = data
+      //   break
+      // // case 'showAnswer':
+      // //   const { answer, answers, enableAnswer } = data
+      // //   break
+      // // case 'changeScore':
+      // //   const { teams } = data
+      // //   break
+      // case 'endRace':
+      //   const  { enableAnswer, closed } = data
+      //   break
+      // case 'rename':
+      //   const { teams } = data
+      //   break
+      // // case 'answer':
+      // //   const { teamToken, activeTeam, enableAnswer } = data
+      // //   break
+      }
+    }
+    // this.login()
+    // var client = client('judge')
+    // this.judgeObj = new Judge()
   }
 }
 </script>
@@ -237,6 +332,9 @@ export default {
 .btn:focus{
   background: #cd2323;
   color:#fff!important;
+}
+.zhuchi-c{
+  margin-top: 5vh;
 }
 .row-title{
   text-align: left!important;

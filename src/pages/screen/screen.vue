@@ -23,7 +23,7 @@
   </div>
   </el-row>
   <!-- 主要内容 -->
-  <el-row :span="18">
+  <el-row :span="18" class="main">
     <!-- 题目问题 答案 -->
     <el-col :span="12"><div class="grid-content grid-content-left">
       <el-row :span="4" class="border title title-question">
@@ -61,7 +61,6 @@
         <el-table-column
           type="index"
           label="排名"
-          width="200px"
           align="center">
         </el-table-column>
         <el-table-column
@@ -106,8 +105,8 @@ export default {
       teamAnswer: '',
       currentNumber: null,
       showAnswer: false,
-      question: '中国共产党性质是什么？<br /> A、中国共产党是中国工人阶级的先锋队<br /> B 中国人民和中华民族的先锋队<br /> C 中国特色社会主义事业的领导核心<br /> D 代表中国先进生产力的发展要求，代表中国先进文化的前进方向，代表中国最广大人民的根本利益',
-      tableData: [{}]
+      question: '',
+      tableData: []
     }
   },
   methods: {
@@ -150,11 +149,11 @@ export default {
       this.question = data.config.question
       console.log(this.question.length)
       if (this.question.length < 150) {
-        document.getElementById('question-sizeof').style.lineHeight = '200px'
-      } else if (this.question.length >= 150 && this.question.length <= 250) {
-        document.getElementById('question-sizeof').style.lineHeight = '150px'
-      } else if (this.question.length > 250) {
-        document.getElementById('question-sizeof').style.lineHeight = '100px'
+        document.getElementById('question-sizeof').style.lineHeight = '80px'
+      } else if (this.question.length >= 150 && this.question.length < 250) {
+        document.getElementById('question-sizeof').style.lineHeight = '50px'
+      } else if (this.question.length >= 250 && this.question.length <= 350) {
+        document.getElementById('question-sizeof').style.lineHeight = '40px'
       }
       this.showAnswer = data.config.showAnswer
       /**
@@ -197,9 +196,9 @@ export default {
           beginTime: 0,
           // beginTime: Date.now(), // 时间戳，后台返回的
           currentNumber: 66,
-          question: '中国共产党性质是什么？<br /> A、中国共产党是中国工人阶级的先锋队<br /> B 中国人民和中华民族的先锋队<br /> C 中国特色社会主义事业的领导核心<br /> D 代表中国先进生产力的发展要求，代表中国先进文化的前进方向，代表中国最广大人民的根本利益',
+          question: '中国共产党性质是什么？<br /> A、中国共产党是中国工人阶级的先锋队<br /> B 中国人民和中华民族的先锋队<br /> C 中国特色社会主义事业的领导核心<br /> D 代表中国先进生产力的发展要求，代表中国先进文化的前进方向，代表中国最广大人民的根本利益.',
           correctAnswer: 'ABCDE',
-          showAnswer: false, // 主持界面点击显示答案时传过来的值 fasle时只传第一个回答者答案，true所有人答案
+          showAnswer: true, // 主持界面点击显示答案时传过来的值 fasle时只传第一个回答者答案，true所有人答案
           firstAnswer: [{teamToken: '6666', teamAnswer: 'ABC'}],
           allAnswer: [
             // {teamToken: '', teamAnswer: ''}
@@ -282,93 +281,90 @@ export default {
 </script>
 
 <style>
-.main-zhuchi{
+body{
+  margin:0;
   width: 1280;
   height: 720;
+}
+.main-zhuchi{
+  /* width: 1280;
+  height: 720; */
   background: url('./images/back.png');
   background-size: 100% 100%;
   min-width:800px;
   color: #fff;
 }
 .header{
+  height:90px;
   margin: 0px;
   background:rgba(255,255,255,0.1);
 }
 .header-main{
-  height: 15vh;
-  margin: 50px 50px 50px 50px;
+  height: 50px;
+  margin: 23px 25px;
 }
 .header-left{
-  font-size: 100px;
-  padding: 0px;
-}
-.header-right{
-  font-size: 50px;
-  padding: 50px 50px;
+  font-size: 30px;
 }
 .header-img{
-  width: 300px;
-  margin: 50px auto auto 0px;
+  width: 60px;
 }
 .header-text{
-  margin-left: 120px;
+  margin-left: 10px;
   display: inline;
-  line-height: 15vh;
 }
 .race-time{
-  margin-top: 2vh;
+  margin-top: 5px;
 }
 .showtime{
-  font-size: 100px;
+  font-size: 20px;
 }
 .ues-time{
   color: #ff0000;
   background:#fff;
-  font-size: 70px;
+}
+.main{
+  margin:20px 20px 15px 20px;
 }
 .grid-content{
-  margin: 60px 40px auto 40px;
+  /* margin: 20px 20px auto 20px; */
+  padding-bottom: 30px;
 }
 .border{
   border:1px solid #CD2323;
 }
 .title{
-  border-top-right-radius:25px;
-  border-top-left-radius:25px;
+  border-top-right-radius:5px;
+  border-top-left-radius:5px;
   background: #CD2323;
-  height: 6vh;
-  padding-top:30px;
-  font-size: 50px;
+  height: 35px;
+  padding-top:10px;
 }
 .opacity{
-  border-bottom-right-radius:25px;
-  border-bottom-left-radius:25px;
-  padding: 50px 100px;
+  border-bottom-right-radius:5px;
+  border-bottom-left-radius:5px;
+  padding: 20px 20px;
   background:rgba(255,255,255,0.1);
 }
 .question{
-  height: 50vh;
-  font-size: 50px;
-  padding: 80px 100px;
-  margin-bottom: 3vh;
+  height: 470px;
+  margin-bottom: 20px;
 }
 .svg-icon{
-  margin-right: 20px;
-  margin-left:40px;
-  font-size: 80px;
+  margin-right: 5px;
+  margin-left:10px;
+  font-size: 20px;
 }
 .correct-answer{
   padding: 0px;
-  border-radius: 25px;
-  height: 10vh;
-  font-size: 50px;
+  border-radius: 5px;
+  height: 60px;
 }
 .right-bottom{
-  /* font-family:sans-serif; */
-  padding: 50px 80px;
-  border-bottom-right-radius:25px;
-  border-bottom-left-radius:25px;
-  height: 63vh;
+  padding: 20px 20px;
+  border-bottom-right-radius:5px;
+  border-bottom-left-radius:5px;
+  height: 550px;
   background:rgba(255,255,255,0.1);
 }
 .el-table .warning-row {
@@ -381,31 +377,28 @@ export default {
   border-radius: 0px;
   padding: 0;
 }
-.el-table .cell{
-  line-height: 100px!important;
-}
 .bg-green{
   color: green
 }
 .el-table__row{
-  height: 8vh;
+  height: 70px;
 }
 th{
-  height: 150px;
+  height: 50px;
 }
 .answer-icon{
-  line-height: 4;
+ padding: 20px;
 }
 .scratch-card{
-  width: 500px!important;
-  height: 10vh!important;
+  width: 150px!important;
+  height: 60px!important;
 }
 .all-answer{
   text-align: center;
 }
 .scratch-card-result{
   text-align: center;
-  line-height: 2;
-  font-size: 100px;
+  padding: 10px;
+  font-size: 30px;
 }
 </style>
