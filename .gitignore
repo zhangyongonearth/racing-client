@@ -19,3 +19,4 @@ yarn-error.log*
 *.njsproj
 *.sln
 *.sw?
+src/pages/screen/images/back.png
