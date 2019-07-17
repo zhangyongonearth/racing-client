@@ -1,7 +1,7 @@
 <template>
 <div class="main-xuanshou">
   <!-- 选手口令界面 -->
-  <div v-if="type==='zero'" class="xuanshou-one">
+  <div v-if="type==='viewToken'" class="xuanshou-one">
       <van-row :span="4" class="row-icon">
         <svg-icon icon-class="cup"></svg-icon>
         <div class="one-racename">{{raceName}}</div>
@@ -26,7 +26,7 @@
       </van-row>
   </div>
   <!-- 选手名字界面 -->
-  <div v-else-if="type==='one'" class="xuanshou-one">
+  <div v-else-if="type==='viewRename'" class="xuanshou-one">
       <van-row :span="4" class="row-icon">
         <svg-icon icon-class="cup"></svg-icon>
         <div class="one-racename">{{raceName}}</div>
@@ -51,10 +51,10 @@
       </van-row>
   </div>
   <!-- 选项界面 -->
-  <div v-else-if="type==='two'" class="xuanshou-two">
+  <div v-else-if="type==='viewOptions'" class="xuanshou-two">
     <van-row class="row-number">
       <span>
-        第<span class="two-currentNumber">{{currentNumber}}</span>题
+        第<span class="two-currentNumber">{{questionIndex}}</span>题
       </span>
     </van-row>
     <van-row type="flex" justify="space-between" class="row-options">
@@ -74,15 +74,16 @@
 </template>
 
 <script>
+import { Team } from '../client'
 export default {
   data() {
     return {
-      type: 'zero',
-      // showOne: true, // true为登录界面，false为选项界面
+      type: 'viewToken',
       raceName: '党建知识竞赛',
       teamName: '',
       teamToken: '',
-      currentNumber: 15,
+      questionIndex: 0,
+      enableAnswer: false,
       teamAnswer: [], // 存放选手选择的答案
       notClickA: false, // true不可点击
       notClickB: false, // true不可点击
@@ -94,9 +95,6 @@ export default {
   },
   methods: {
     clickA() {
-      this.teamAnswer.push('A')
-      document.getElementById('btnA').style.backgroundColor = '#f9ab00'
-      document.getElementById('btnA').style.color = '#fff'
       if (this.notClickA === true) {
         for (var i = 0; i < this.teamAnswer.length; i++) {
           if (this.teamAnswer[i] === 'A') {
@@ -105,14 +103,15 @@ export default {
             document.getElementById('btnA').style.color = '#000'
           }
         }
+      } else {
+        this.teamAnswer.push('A')
+        document.getElementById('btnA').style.backgroundColor = '#f9ab00'
+        document.getElementById('btnA').style.color = '#fff'
       }
       this.notClickA = !this.notClickA
-      console.log('1111' + this.teamAnswer)
+      console.log(this.teamAnswer)
     },
     clickB() {
-      this.teamAnswer.push('B')
-      document.getElementById('btnB').style.backgroundColor = '#f9ab00'
-      document.getElementById('btnB').style.color = '#fff'
       if (this.notClickB === true) {
         for (var i = 0; i < this.teamAnswer.length; i++) {
           if (this.teamAnswer[i] === 'B') {
@@ -121,14 +120,15 @@ export default {
             document.getElementById('btnB').style.color = '#000'
           }
         }
+      } else {
+        this.teamAnswer.push('B')
+        document.getElementById('btnB').style.backgroundColor = '#f9ab00'
+        document.getElementById('btnB').style.color = '#fff'
       }
       this.notClickB = !this.notClickB
-      console.log('1111' + this.teamAnswer)
+      console.log(this.teamAnswer)
     },
     clickC() {
-      this.teamAnswer.push('C')
-      document.getElementById('btnC').style.backgroundColor = '#f9ab00'
-      document.getElementById('btnC').style.color = '#fff'
       if (this.notClickC === true) {
         for (var i = 0; i < this.teamAnswer.length; i++) {
           if (this.teamAnswer[i] === 'C') {
@@ -137,14 +137,15 @@ export default {
             document.getElementById('btnC').style.color = '#000'
           }
         }
+      } else {
+        this.teamAnswer.push('C')
+        document.getElementById('btnC').style.backgroundColor = '#f9ab00'
+        document.getElementById('btnC').style.color = '#fff'
       }
       this.notClickC = !this.notClickC
-      console.log('1111' + this.teamAnswer)
+      console.log(this.teamAnswer)
     },
     clickD() {
-      this.teamAnswer.push('D')
-      document.getElementById('btnD').style.backgroundColor = '#f9ab00'
-      document.getElementById('btnD').style.color = '#fff'
       if (this.notClickD === true) {
         for (var i = 0; i < this.teamAnswer.length; i++) {
           if (this.teamAnswer[i] === 'D') {
@@ -153,14 +154,15 @@ export default {
             document.getElementById('btnD').style.color = '#000'
           }
         }
+      } else {
+        this.teamAnswer.push('D')
+        document.getElementById('btnD').style.backgroundColor = '#f9ab00'
+        document.getElementById('btnD').style.color = '#fff'
       }
       this.notClickD = !this.notClickD
-      console.log('1111' + this.teamAnswer)
+      console.log(this.teamAnswer)
     },
     clickE() {
-      this.teamAnswer.push('E')
-      document.getElementById('btnE').style.backgroundColor = '#f9ab00'
-      document.getElementById('btnE').style.color = '#fff'
       if (this.notClickE === true) {
         for (var i = 0; i < this.teamAnswer.length; i++) {
           if (this.teamAnswer[i] === 'E') {
@@ -169,85 +171,136 @@ export default {
             document.getElementById('btnE').style.color = '#000'
           }
         }
+      } else {
+        this.teamAnswer.push('E')
+        document.getElementById('btnE').style.backgroundColor = '#f9ab00'
+        document.getElementById('btnE').style.color = '#fff'
       }
       this.notClickE = !this.notClickE
-      console.log('1111' + this.teamAnswer)
+      console.log(this.teamAnswer)
     },
     tokenLogin() {
       if (this.teamToken !== '') {
-        const teamToken = this.teamToken
-        localStorage.setItem('战队口令', teamToken)
-        this.type = 'one'
+        localStorage.setItem('战队口令', this.teamToken)
+        this.team.login(this.teamToken)
       } else {
         return false
       }
     },
     start() {
-      // var existToken = false
-      // var data = this.getdata().config
-      // // 判断输入token是否存在于tokens
-      // for (var i = 0; i < data.tokens.length; i++) {
-      //   if (data.tokens[i] === this.teamToken) {
-      //     existToken = true
-      //   }
-      // }
       if (this.teamName !== '') {
-        const teamName = this.teamName
-        localStorage.setItem('战队名字', teamName)
-        this.type = 'two'
+        this.team.rename(this.teamName)
+        localStorage.setItem('战队名字', this.teamName)
+        this.type = 'viewOptions'
       } else {
         return false
       }
     },
     submit() {
-      // 提交 所选答案+战队口令（口令从localStorage中获取）传给后台。后台再发送到screen界面
-      // ???有点小问题 选项界面刷新出点问题
-      var data1 = localStorage.getItem('战队口令')
-      this.teamToken = data1.teamToken
-      const answerInfo = {
-        'teamToken': this.teamToken,
-        'teamAnswer': this.teamAnswer
-      }
-      localStorage.setItem('战队答案', JSON.stringify(answerInfo))
-      this.isSubmit = true// 提交答案后，按钮不可点击，当题号变化时才可
-      const str = true
-      localStorage.setItem('按钮状态', str)
-    },
-    login() {
-      var data = this.getdata().config
-      var data1 = localStorage.getItem('战队口令')
-      var data2 = localStorage.getItem('战队名字')
-      if (!data1 && data1.teamToken === '') {
-        this.type = 'zero'
-      } else if (!data2 && data2.teamName === '') {
-        this.type = 'one'
+      console.log('xuanxiang0' + this.teamAnswer)
+      this.teamAnswer.sort()
+      console.log('xuanxiang1' + this.teamAnswer)
+      this.teamAnswer.join('')
+      console.log('xuanxiang' + this.teamAnswer)
+      if (this.teamAnswer !== '') {
+        this.team.answer(this.teamAnswer, this.questionIndex)
+        this.isSubmit = true
       } else {
-        this.type = 'two'
-        this.currentNumber = data.currentNumber
+        return false
       }
     },
-    getdata() {
-      /**
-       * 要传到后台数据:
-       * teamName+teamToken
-       * teamToken+teamAnswer
-       */
-      // 从后台得到的数据如下
-      return {
-        config: {
-          tokens: ['0921', '1108', '1128', '6666', '0715'],
-          currentNumber: 22
-        }
-      }
+    onConnect(data) {
+      const {enableAnswer, questionIndex, updateTime, activeTeam, teams} = data
+      this.enableAnswer = enableAnswer
+      this.questionIndex = questionIndex
+      this.updateTime = updateTime
+      this.activeTeam = activeTeam
+      this.teams = teams
+      this.type = 'viewRename'
+    },
+    onInitRace(data) {
+      const {enableAnswer} = data
+      this.enableAnswer = enableAnswer
+    },
+    onBeginRace(data) {
+      const { enableAnswer, beginTime, questionIndex } = data
+      this.enableAnswer = enableAnswer
+      this.beginTime = beginTime
+      this.questionIndex = questionIndex
+    },
+    // onNextQuestion(data) {
+    //   const { questionIndex, question, score, updateTime, enableAnswer } = data
+    //   this.questionIndex = questionIndex
+    //   this.question = question
+    //   this.score = score
+    //   this.updateTime = updateTime
+    //   this.enableAnswer = enableAnswer
+    // },
+    // onShowAnswer(data) {
+    //   const { answer, answers, enableAnswer } = data
+    //   this.answer = answer
+    //   this.answers = answers
+    //   this.enableAnswer = enableAnswer
+    // },
+    // onChangeScore(data) {
+    //   const { teams } = data
+    //   this.teams = teams
+    // },
+    // onEndRace(data) {
+    //   const { enableAnswer, closed } = data
+    //   this.enableAnswer = enableAnswer
+    //   this.closed = closed
+    // },
+    // onRename(data) {
+    //   const { newName, teamToken } = data
+    //   this.teamName = newName
+    //   if (this.teamToken === teamToken) {
+    //     this.type = 'viewOptions'
+    //   }
+    // },
+    onAnswer(data) {
+      const { teamToken, activeTeam, enableAnswer } = data
+      this.teamToken = teamToken
+      this.activeTeam = activeTeam
+      this.enableAnswer = enableAnswer
     }
   },
   mounted() {
-    this.login()
-  },
-  watch: {
-    'currentNumber': function(newVal) {
-      this.currentNumber = newVal
-      this.isSubmit = false
+    this.team = new Team()
+    const self = this
+    this.team.onmessage = function(resp) {
+      console.log('this is team onmessage')
+      console.log(resp)
+      const { action, data} = JSON.parse(resp)
+      switch (action) {
+        case 'connect':
+          self.onConnect(data)
+          break
+        case 'initRace':
+          self.onInitRace(data)
+          break
+        case 'beginRace':
+          self.onBeginRace(data)
+          break
+        case 'nextQuestion':
+          self.onNextQuestion(data)
+          break
+        case 'showAnswer':
+          self.onShowAnswer(data)
+          break
+        case 'changeScore':
+          self.onChangeScore(data)
+          break
+        case 'endRace':
+          self.onEndRace(data)
+          break
+        case 'rename':
+          self.onRename(data)
+          break
+        case 'answer':
+          self.onAnswer(data)
+          break
+      }
     }
   }
 }
