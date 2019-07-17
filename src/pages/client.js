@@ -1,5 +1,5 @@
 function createClient(token, type, onmessage) {
-  var url = 'ws://192.168.2.1'// + location.host
+  var url = 'ws://localhost'// + location.host
   if (type !== 'screen') { // judge, team
     url += '?' + type + 'Token=' + token
   }
@@ -74,40 +74,6 @@ export function Judge() {
   this.endRace = function() {
     this.send({action: 'endRace'})
   }
-  this.onmessage = function(resp) {
-    console.log('this is judge onmessage')
-    console.log(resp)
-    const { action, data} = JSON.parse(resp)
-    switch (action) {
-      case 'connect':
-        const {enableAnswer, questionIndex, updateTime, activeTeam, teams} = data
-        break
-      // case 'initRace':
-      //   const {teamTokens} = data
-      //   break
-      // case 'beginRace':
-      //   const { enableAnswer, beginTime, questionIndex } = data
-      //   break
-      // case 'nextQuestion':
-      //   const { questionIndex, question, score, updateTime, enableAnswer } = data
-      //   break
-      // // case 'showAnswer':
-      // //   const { answer, answers, enableAnswer } = data
-      // //   break
-      // // case 'changeScore':
-      // //   const { teams } = data
-      // //   break
-      // case 'endRace':
-      //   const  { enableAnswer, closed } = data
-      //   break
-      // case 'rename':
-      //   const { teams } = data
-      //   break
-      // // case 'answer':
-      // //   const { teamToken, activeTeam, enableAnswer } = data
-      // //   break
-    }
-  }
 }
 export function Team() {
   Client.call(this, 'team')
@@ -116,40 +82,6 @@ export function Team() {
   }
   this.rename = function(newName) {
     this.send({ action: 'rename', data: {newName}})
-  }
-  this.onmessage = function(resp) {
-    console.log('this is team onmessage')
-    console.log(resp)
-    const { action, data} = JSON.parse(resp)
-    switch (action) {
-      // case 'connect':
-      //   const {enableAnswer, questionIndex, updateTime, activeTeam, teams} = data
-      //   break
-      // case 'initRace':
-      //   const {enableAnswer} = data
-      //   break
-      // case 'beginRace':
-      //   const { enableAnswer, beginTime, questionIndex } = data
-      //   break
-      // case 'nextQuestion':
-      //   const { questionIndex, question, score, updateTime, enableAnswer } = data
-      //   break
-      // case 'showAnswer':
-      //   const { answer, answers, enableAnswer } = data
-      //   break
-      // case 'changeScore':
-      //   const { teams } = data
-      //   break
-      // case 'endRace':
-      //   const  { enableAnswer, closed } = data
-      //   break
-      // // case 'rename':
-      // //   const { teams } = data
-      // //   break
-      case 'answer':
-        const { teamToken, activeTeam, enableAnswer } = data
-        break
-    }
   }
 }
 export function Screen() {

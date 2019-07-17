@@ -21,13 +21,13 @@
     <el-col :span="12">
       <div class="grid-content grid-content-left">
       <el-row :span="4" class="border title title-question">
-        <svg-icon icon-class="file"></svg-icon>题目:{{currentNumber}}
+        <svg-icon icon-class="file"></svg-icon>题目:{{questionIndex}}
       </el-row>
       <el-row :span="18" id="question-sizeof" class="border opacity question"><div v-html="question"></div></el-row>
       <el-row :span="2" class="border opacity correct-answer">
         <el-col :span="7" class="answer-icon"><svg-icon icon-class="showanswer"></svg-icon>正确答案：</el-col>
-        <el-col :span="10" v-show="showAnswer">
-
+        <el-col :span="10" class="answer-icon">
+          {{correctAnswer}}
         </el-col>
       </el-row>
     </div>
@@ -52,20 +52,18 @@
           align="center">
           <template slot-scope="scope">
             <svg-icon style="float:left" icon-class="img"></svg-icon>
-            <span>{{scope.row.teamName}}</span>
+            <span>{{scope.row.name}}</span>
           </template>
         </el-table-column>
         <el-table-column
-          prop="teamScore"
+          prop="score"
           label="分数"
           align="center">
         </el-table-column>
         <el-table-column
+          prop="answer"
           label="答案"
           align="center">
-          <template slot-scope="scope">
-            <div id="all-answer" class="all-answer">{{scope.row.teamAnswer}}</div>
-          </template>
         </el-table-column>
         </el-table>
       </el-row>
@@ -75,14 +73,14 @@
 </template>
 
 <script>
-import { setInterval } from 'timers'
-import { Screen } from '../client'
+import { setInterval, clearInterval} from 'timers'
+import {Screen} from '../client'
 export default {
   name: 'screen',
   data() {
     return {
       apartment: '网络软件研发部党支部',
-      currentDate: '2019-07-15',
+      currentDate: new Date().getFullYear() + '-' + (new Date().getMonth() + 1) + '-' + new Date().getDate(),
       useTime: {
         minute: '00',
         second: '00'
@@ -90,114 +88,104 @@ export default {
       raceName: '践行社会主义核心价值观之知识竞赛',
       beginTime: '', //
       correctAnswer: '',
-      teamAnswer: [
-        {
-          teamToken: '0921',
-          teamAnswer: 'A'
-        },
-        {
-          teamToken: '1108',
-          teamAnswer: 'AB'
-        },
-        {
-          teamToken: '1128',
-          teamAnswer: 'ABC'
-        },
-        {
-          teamToken: '6666',
-          teamAnswer: 'ABCD'
-        },
-        {
-          teamToken: '0715',
-          teamAnswer: 'ABCDE'
-        }
-      ],
-      currentNumber: null,
-      showAnswer: false,
-      question: '中国共产党性质是什么？<br /> A、中国共产党是中国工人阶级的先锋队<br /> B 中国人民和中华民族的先锋队<br /> C 中国特色社会主义事业的领导核心<br /> D 代表中国先进生产力的发展要求，代表中国先进文化的前进方向，代表中国最广大人民的根本利益.',
-      tableData: [
-        {
-          teamToken: '0921',
-          teamName: '小分队',
-          teamScore: '53',
-          teamAnswer: ''
-        },
-        {
-          teamToken: '1108',
-          teamName: '加油队123',
-          teamScore: '45',
-          teamAnswer: ''
-        },
-        {
-          teamToken: '1128',
-          teamName: '强强联盟',
-          teamScore: '20',
-          teamAnswer: ''
-        },
-        {
-          teamToken: '6666',
-          teamName: '薛定谔的猫',
-          teamScore: '45',
-          teamAnswer: ''
-        },
-        {
-          teamToken: '0715',
-          teamName: '@未来可期 事无蹉跎',
-          teamScore: '20',
-          teamAnswer: ''
-        }
-      ]
+      teamAnswer: '',
+      questionIndex: '',
+      question: '',
+      tableData: [],
+      timer: '',
+      activeTeam: ''
     }
   },
   methods: {
     computeTime() {
-      const newTime = new Date().getTime()
-      var mss = newTime - this.beginTime
-      const m = parseInt((mss % (1000 * 60 * 60)) / (1000 * 60)) // 得到分钟数
-      const s = (mss % (1000 * 60)) / 1000 // 得到秒数
-      const minutes = Math.floor(m)
-      const seconds = Math.floor(s)
-      this.useTime.minute = minutes < 10 ? ('0' + minutes) : minutes
-      this.useTime.second = seconds < 10 ? ('0' + seconds) : seconds
+      var self = this
+      this.timer = setInterval(() => {
+        const newTime = new Date().getTime()
+        var mss = newTime - self.beginTime
+        const m = parseInt((mss % (1000 * 60 * 60)) / (1000 * 60)) // 得到分钟数
+        const s = (mss % (1000 * 60)) / 1000 // 得到秒数
+        const minutes = Math.floor(m)
+        const seconds = Math.floor(s)
+        self.useTime.minute = minutes < 10 ? ('0' + minutes) : minutes
+        self.useTime.second = seconds < 10 ? ('0' + seconds) : seconds
+      }, 1000)
     },
     tableRowClassName({row, rowIndex}) {
-      if (rowIndex % 2 === 0) {
+      // if (rowIndex % 2 === 0) {
+      //   return 'warning-row'
+      // } else {
+      //   return 'success-row'
+      // }
+      if (row.index && row.index === 1) {
         return 'warning-row'
-      } else {
-        return 'success-row'
       }
     },
     onConnect(data) {
-      const {enableAnswer, questionIndex, updateTime, activeTeam, teams} = data
+      // raceName: config.raceName,
+      // raceMode: config.raceMode,
+      // beginTime: config.beginTime,
+      // enableAnswer: state.enableAnswer,
+      // questionIndex: state.questionIndex,
+      // question: state.question,
+      // updateTime: state.updateTime,
+      // activeTeam: state.activeTeam,
+      // teams: state.teams // 以防该主持人在比赛过程中刷新
+      console.log(data)
     },
     onInitRace(data) {
-      const {raceName, raceMode, teamCount, beginTime, enableAnswer} = data
+      const {raceName} = data
+      this.raceName = raceName
     },
     onBeginRace(data) {
-      const { enableAnswer, beginTime, questionIndex } = data
+      const { beginTime} = data
+      this.beginTime = beginTime
+      this.computeTime()
     },
     onNextQuestion(data) {
-      const { questionIndex, question, score, updateTime, enableAnswer } = data
+      const { questionIndex, question } = data
+      this.questionIndex = questionIndex + 1
+      this.question = question
+      this.correctAnswer = ''
+      this.activeTeam = undefined
     },
     onShowAnswer(data) {
-      const { answer, answers, enableAnswer } = data
+      const { answer, answers } = data
+      this.correctAnswer = answer
+      this.tableData.forEach((v, i) => {
+        this.tableData[i]['answer'] = answers[v.teamToken]['answer']
+      })
     },
     onChangeScore(data) {
-      const { teams } = data
+      const { teamToken, newValue } = data
+      //      const { teams } = data
+      this.tableData.forEach((v, i) => {
+        if (v.teamToken === teamToken) {
+          v.score = newValue
+        }
+        // this.tableData[i]['score'] = teams[v.teamToken]['score']
+      })
+      this.tableData.sort((x, y) => {
+        return x['score'] - y['score']
+      })
     },
     onEndRace(data) {
-      const { enableAnswer, closed } = data
+      this.screen.quit()
+      clearInterval(this.timer)
     },
     onRename(data) {
-      const { teams } = data
+      const { teams} = data
+      this.tableData = []
+      for (var i in teams) {
+        this.tableData.push({name: teams[i]['name'], score: teams[i]['score'], teamToken: i, answer: '1'})
+      }
     },
     onAnswer(data) {
-      const { teamToken, activeTeam, enableAnswer } = data
+      const { activeTeam } = data
+      this.activeTeam = activeTeam
     }
   },
   mounted() {
     this.screen = new Screen()
-    this.screen.login()
     const self = this
     this.screen.onmessage = function(resp) {
       console.log('this is screen onmessage')
@@ -233,11 +221,9 @@ export default {
           break
       }
     }
+    this.screen.login()
   },
   watch: {
-    beginTime: function(beginTime) {
-      setInterval(this.computeTime, 1000)
-    }
   }
 }
 </script>
