@@ -76,6 +76,7 @@
 
 <script>
 import { setInterval } from 'timers'
+import { Screen } from '../client'
 export default {
   name: 'screen',
   data() {
@@ -165,21 +166,77 @@ export default {
       } else {
         return 'success-row'
       }
+    },
+    onConnect(data) {
+      const {enableAnswer, questionIndex, updateTime, activeTeam, teams} = data
+    },
+    onInitRace(data) {
+      const {raceName, raceMode, teamCount, beginTime, enableAnswer} = data
+    },
+    onBeginRace(data) {
+      const { enableAnswer, beginTime, questionIndex } = data
+    },
+    onNextQuestion(data) {
+      const { questionIndex, question, score, updateTime, enableAnswer } = data
+    },
+    onShowAnswer(data) {
+      const { answer, answers, enableAnswer } = data
+    },
+    onChangeScore(data) {
+      const { teams } = data
+    },
+    onEndRace(data) {
+      const { enableAnswer, closed } = data
+    },
+    onRename(data) {
+      const { teams } = data
+    },
+    onAnswer(data) {
+      const { teamToken, activeTeam, enableAnswer } = data
     }
   },
   mounted() {
+    this.screen = new Screen()
+    this.screen.login()
+    const self = this
+    this.screen.onmessage = function(resp) {
+      console.log('this is screen onmessage')
+      console.log(resp)
+      const { action, data} = JSON.parse(resp)
+      switch (action) {
+        case 'connect':
+          self.onConnect(data)
+          break
+        case 'initRace':
+          self.onInitRace(data)
+          break
+        case 'beginRace':
+          self.onBeginRace(data)
+          break
+        case 'nextQuestion':
+          self.onNextQuestion(data)
+          break
+        case 'showAnswer':
+          self.onShowAnswer(data)
+          break
+        case 'changeScore':
+          self.onChangeScore(data)
+          break
+        case 'endRace':
+          self.onEndRace(data)
+          break
+        case 'rename':
+          self.onRename(data)
+          break
+        case 'answer':
+          self.onAnswer(data)
+          break
+      }
+    }
   },
   watch: {
     beginTime: function(beginTime) {
       setInterval(this.computeTime, 1000)
-    },
-    'currentNumber': function(newVal) {
-      // 监测到题号发生变化时，正确答案不显示，各组的答案也不显示
-      this.currentNumber = newVal
-      // this.showAnswer = false
-      // for (var i = 0, l = this.tableData.length; i < l; i++) {
-      //   this.tableData[i]['teamAnswer'] = ''
-      // }
     }
   }
 }
