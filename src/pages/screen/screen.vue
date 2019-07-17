@@ -8,7 +8,7 @@
       </el-col>
       <el-col :span="3" >
         <p>比赛用时</p>
-        <p><span class="ues-time">{{useTime.minute}}</span>:<span class="ues-time">{{useTime.second}}</span></p>
+        <p style="font-size: 20px;"><span class="ues-time">{{useTime.minute}}</span>分<span class="ues-time">{{useTime.second}}</span>秒</p>
       </el-col>
       <el-col :span="4" >
         <p>{{apartment}}</p>
@@ -176,7 +176,7 @@ export default {
       const { teams} = data
       this.tableData = []
       for (var i in teams) {
-        this.tableData.push({name: teams[i]['name'], score: teams[i]['score'], teamToken: i, answer: '1'})
+        this.tableData.push({name: teams[i]['name'], score: teams[i]['score'], teamToken: i, answer: ''})
       }
     },
     onAnswer(data) {
@@ -242,7 +242,6 @@ body{
 .ues-time{
   color: #ff0000;
   background:#fff;
-  font-size: 24px;
   margin-top: 0;
 }
 .grid-content{

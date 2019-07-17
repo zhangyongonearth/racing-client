@@ -1,5 +1,5 @@
 function createClient(token, type, onmessage) {
-  var url = 'ws://localhost'// + location.host
+  var url = 'ws://192.168.2.1' // + location.host
   if (type !== 'screen') { // judge, team
     url += '?' + type + 'Token=' + token
   }
@@ -84,6 +84,7 @@ export function Team() {
     this.send({ action: 'rename', data: {newName}})
   }
 }
+
 export function Screen() {
   Client.call(this, 'screen')
 }

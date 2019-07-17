@@ -1,10 +1,10 @@
 <template>
 <div class="main-zhuchi">
-  <!-- A主持登录界面 -->
-  <div v-if="type==='A'" class="zhuchi-one">
+  <!-- 主持口令登录界面 -->
+  <div v-if="type==='viewToken'" class="zhuchi-one">
     <van-row :span="4" class="row-icon">
       <svg-icon icon-class="cup"></svg-icon>
-      <div class="one-platform">{{platform}}</div>
+      <div class="one-platform">主持人口令登录</div>
     </van-row>
     <van-row :span="5" type="flex" justify="center" class="row-name">
       <van-col :span="5">
@@ -26,11 +26,11 @@
       <van-button round class="one-start" @click="tokenLogin">登录</van-button>
     </van-row>
   </div>
-  <!-- B主持登录界面 -->
-  <div v-else-if="type==='B'" class="zhuchi-one">
+  <!-- 主持比赛名称+队伍数量界面 -->
+  <div v-else-if="type==='viewRename'" class="zhuchi-one">
     <van-row :span="4" class="row-icon">
       <svg-icon icon-class="cup"></svg-icon>
-      <div class="one-platform">{{platform}}</div>
+      <div class="one-platform">网络软件研发部知识竞赛系统</div>
     </van-row>
     <van-row :span="5" type="flex" justify="center" class="row-name">
       <van-col :span="5">
@@ -57,6 +57,7 @@
         <van-stepper
           integer
           v-model="setNumber"
+          @change="changeNum"
           input-width="60px"
           button-size="50px"
           class="teamNumber-right"
@@ -70,11 +71,11 @@
       <van-col class="random-value" v-for="(random) in tokens" v-bind:key="random"><u>{{random}}</u></van-col>
     </van-row>
     <van-row :span="4" class="row-start">
-      <van-button round class="one-start" :disabled="isStart" @click="setRace">生成竞赛</van-button>
+      <van-button round class="one-start" :disabled="isSet" @click="setRace">生成竞赛</van-button>
     </van-row>
   </div>
-  <!-- C主持人操作-开始界面 -->
-  <div v-else-if="type==='C'" class="zhuchi-c">
+  <!-- 主持人操作-开始界面 -->
+  <div v-else-if="type==='viewStart'" class="zhuchi-c">
     <van-row :span="2" class="row-title">
       <el-col :span="12">
         <svg-icon class="compute-icon" icon-class="compute"></svg-icon>战队计分
@@ -83,9 +84,9 @@
     <van-row :span="10">
       <el-table
         highlight-current-row
-        :data="computeData">
+        :data="initData">
         <el-table-column
-          prop="teamName"
+          prop="name"
           label="战队名称"
           align="center">
         </el-table-column>
@@ -95,7 +96,7 @@
           <template slot-scope="scope">
             <van-stepper
               integer
-              v-model="scope.row.teamScore"
+              v-model="scope.row.score"
               @change="changeValue"
               input-width="40px"
               button-size="40px"
@@ -109,16 +110,16 @@
         <van-button class="two-start" @click="startRace">开始竞赛</van-button>
     </van-row>
   </div>
-    <!-- D主持人操作-结束界面 -->
-  <div v-else-if="type==='D'" class="zhuchi-two">
+    <!-- 主持人操作 -->
+  <div v-else-if="type==='viewOperate'" class="zhuchi-two">
     <van-row :span="4" class="row-number">
       <span>
-        第<span class="two-currentNumber">{{currentNumber}}</span>题
+        第<span class="two-currentNumber">{{questionIndex}}</span>题
       </span>
     </van-row>
     <van-row :span="2" type="flex" justify="space-around" class="row-btn">
         <van-col span="9">
-          <van-button plain class="btn" :disabled="isBtn" @click="showAnswer">显示答案</van-button>
+          <van-button plain class="btn" :disabled="isBtn" @click="showAnswerbtn">显示答案</van-button>
         </van-col>
         <van-col span="9">
           <van-button plain class="btn" :disabled="!isBtn" @click="nextNumber">下一题</van-button>
@@ -134,7 +135,7 @@
         highlight-current-row
         :data="computeData">
         <el-table-column
-          prop="teamName"
+          prop="name"
           label="战队名称"
           align="center">
         </el-table-column>
@@ -144,7 +145,7 @@
           <template slot-scope="scope">
             <van-stepper
               integer
-              v-model="scope.row.teamScore"
+              v-model="scope.row.score"
               @change="changeValue"
               input-width="40px"
               button-size="40px"
@@ -162,247 +163,169 @@
 </template>
 
 <script>
-// function createClient(token, type, onmessage) {
-//   var url = 'ws://localhost'
-//   if (type !== 'screen') { // judge, team
-//     url += '?' + type + 'Token=' + token
-//   }
-//   var ws = new WebSocket(url)
-//   ws.onopen = function() {
-//     console.log('@open')
-//   }
-
-//   ws.onmessage = function(e) {
-//     console.log('@message')
-//     onmessage(e.data)
-//   }
-//   ws.onclose = function() {
-//     console.log('@close')
-//   }
-//   ws.onerror = function() {
-//     alert('口令错误')
-//     console.log('@error')
-//   }
-//   return ws
-// }
-// function Client(type) {
-//   this.token = undefined
-//   this.ws = undefined
-//   this.type = type
-//   this.login = function(token) {
-//     if (this.ws && this.ws.readyState === this.ws.OPEN) {
-//       if (this.token === token) {
-//         return this
-//       }
-//       this.ws.close()
-//     }
-//     this.token = token
-//     this.ws = createClient(token, this.type, this.onmessage)
-//     return this
-//   }
-//   this.quit = function() {
-//     this.ws.close()
-//   }
-//   this.onmessage = function(data) {
-//     console.log(data)
-//   }
-//   this.send = function(json) {
-//     if (this.type === 'team') {
-//       json.data.teamToken = this.token
-//     }
-//     try {
-//       this.ws.send(JSON.stringify(json))
-//     } catch (e) {
-//       this.login(this.token)
-//       this.ws.send(JSON.stringify(json))
-//     }
-//   }
-// }
-
+import {Judge} from '../client'
 export default {
   data() {
     return {
-      type: 'A',
+      type: 'viewToken',
       zhuchiToken: '',
-      platform: '知识竞赛平台',
       raceName: '',
-      setNumber: 5,
+      setNumber: 0,
       teamNumber: 0,
       isCreate: false, // 生成口令按钮 false可点击
-      isStart: true, // 开始比赛按钮 false可点击
+      isSet: true, // 生成比赛按钮 false可点击
       tokens: [],
-      currentNumber: 15,
-      isBtn: false, // 为true时“下一题”按钮可点击，为false时“显示答案”按钮可点击
+      questionIndex: 15,
+      isBtn: true, // 为true时“下一题”按钮可点击，为false时“显示答案”按钮可点击
       isEnd: false, // 为false时结束竞赛”按钮可点击，为true不可点击
-      computeData: [],
-      show_answer: false
-      // judgeObj: '',
-      // Judge: {
-      //   initRace: function(raceName, teamCount, raceMode) {
-      //     this.send({action: 'initRace', data: {raceName, teamCount, raceMode}})
-      //   },
-      //   beginRace: function() {
-      //     this.send({action: 'beginRace'})
-      //   },
-      //   nextQuestion: function() {
-      //     this.send({action: 'nextQuestion'})
-      //   },
-      //   showAnswer: function(questionIndex) {
-      //     this.send({action: 'showAnswer', data: {questionIndex}})
-      //   },
-      //   changeScore: function(teamToken, teamScore) {
-      //     this.send({action: 'changeScore', data: {teamToken, teamScore}})
-      //   },
-      //   endRace: function() {
-      //     this.send({action: 'endRace'})
-      //   },
-      //   onmessage: function(resp) {
-      //     console.log('this is judge onmessage')
-      //     console.log(resp)
-      //     const { action, data} = JSON.parse(resp)
-      //     console.log(data)
-      //     switch (action) {
-      //       case 'connect':
-      //         this.type = 'B'
-      //         // const {enableAnswer, questionIndex, updateTime, activeTeam, teams} = data
-      //         break
-      //       case 'initRace':
-      //         // const {teamTokens} = data
-      //         break
-      //           // case 'beginRace':
-      //           //   const { enableAnswer, beginTime, questionIndex } = data
-      //           //   break
-      //           // case 'nextQuestion':
-      //           //   const { questionIndex, question, score, updateTime, enableAnswer } = data
-      //           //   break
-      //           // // case 'showAnswer':
-      //           // //   const { answer, answers, enableAnswer } = data
-      //           // //   break
-      //           // // case 'changeScore':
-      //           // //   const { teams } = data
-      //           // //   break
-      //           // case 'endRace':
-      //           //   const  { enableAnswer, closed } = data
-      //           //   break
-      //           // case 'rename':
-      //           //   const { teams } = data
-      //           //   break
-      //           // // case 'answer':
-      //           // //   const { teamToken, activeTeam, enableAnswer } = data
-      //           // //   break
-      //     }
-      //   }
-      // }
+      initData: [],
+      computeData: []
     }
   },
   methods: {
+    // 主持人口令登录按钮
     tokenLogin() {
       if (this.zhuchiToken !== '') {
-        const zhuchiToken = this.zhuchiToken
-        localStorage.setItem('主持口令', zhuchiToken)
-        // this.judgeObj.login(this.zhuchiToken)
-        this.type = 'B'
+        localStorage.setItem('主持口令', this.zhuchiToken)
+        this.judge.login(this.zhuchiToken)
       } else {
         return false
       }
     },
+    // 改变队伍数量按钮
+    changeNum(value) {
+      this.teamNumber = value
+    },
+    // 显示得到的随机数口令
     getTokens() {
-      var data = this.getdata().config
-      if (this.raceName !== '' && this.setNumber !== null) {
-        const loginInfo = {
-          'raceName': this.raceName,
-          'setNumber': this.setNumber
-        }
-        localStorage.setItem('战队个数', JSON.stringify(loginInfo))
-        this.tokens = data.tokens
-        this.isCreate = true
-        this.isStart = false
+      if (this.raceName !== '') {
+        this.judge.initRace(this.raceName, this.teamNumber)
+      } else {
+        return false
       }
     },
+    // 生成竞赛按钮
     setRace() {
-      this.type = 'C'
+      this.type = 'viewStart'
     },
-    showAnswer() {
-      // 显示答案按钮点击后，传到后台一个布尔类型的值show_answer来控制screen界面的是否显示答案
-      this.show_answer = true
-      this.isBtn = !this.isBtn
-    },
-    nextNumber() {
-      // ???加数字1而不是字符串1
-      this.currentNumber += 1
-      this.isBtn = !this.isBtn
-    },
-    changeValue(value) {
-      this.computeData.teamScore = value
-      // 将战队分数和口令绑定在一起。发送到后台，后台发到screen界面
-      // ？？？如何绑定在一起存储。
-      const scoreInfo = {
-        'teamToken': this.computeData.teamToken,
-        'teamScore': this.computeData.teamScore
-      }
-      localStorage.setItem('战队分数', JSON.stringify(scoreInfo))
-    },
+    // 开始比赛按钮
     startRace() {
-      this.type = 'D'
+      this.judge.beginRace()
     },
+    // 显示答案按钮
+    showAnswerbtn() {
+      this.judge.showAnswer(this.questionIndex)
+    },
+    // 下一题按钮
+    nextNumber() {
+      this.judge.nextQuestion()
+    },
+    // 改变答案按钮
+    changeValue(value) {
+      this.judge.changeScore(this.teamToken, value)
+    },
+    // 结束竞赛按钮
     endRace() {
-      this.isEnd = true
+      this.judge.endRace()
     },
-    login() {
-      var data = this.getdata().config
-      var data1 = JSON.parse(localStorage.getItem('战队个数'))
-      if (data1.raceName !== '' && data1.setNumber !== '') {
-        // this.showOne = false
-        this.computeData = data.computeData
-      }
+    onConnect(data) {
+      const {enableAnswer, questionIndex, updateTime, activeTeam} = data
+      this.enableAnswer = enableAnswer
+      this.questionIndex = questionIndex
+      this.updateTime = updateTime
+      this.activeTeam = activeTeam
+      // this.teams = teams
+      this.type = 'viewRename'
     },
-    getdata() {
-      /**
-       * 要传到后台数据:
-       * raceName
-       * show_answer 控制答案显示
-       * currentNumber
-       * teamToken+teamScore
-       */
-      // 从后台得到的数据如下
-      return {
-        config: {
-          tokens: ['0921', '1108', '1128', '6666', '0715'],
-          computeData: [
-            {
-              teamToken: '0921',
-              teamName: '小分队',
-              teamScore: '1'
-            },
-            {
-              teamToken: '1108',
-              teamName: '加油队123',
-              teamScore: '1'
-            },
-            {
-              teamToken: '1128',
-              teamName: '强强联盟',
-              teamScore: '1'
-            },
-            {
-              teamToken: '6666',
-              teamName: '薛定谔的猫',
-              teamScore: '1'
-            },
-            {
-              teamToken: '0715',
-              teamName: '@未来可期 事无蹉跎',
-              teamScore: '1'
-            }
-          ]
-        }
+    onInitRace(data) {
+      const {teamTokens} = data
+      this.tokens = teamTokens
+      this.isCreate = true
+      this.isSet = false
+    },
+    onBeginRace(data) {
+      const { enableAnswer, beginTime, questionIndex } = data
+      this.enableAnswe = enableAnswer
+      this.beginTime = beginTime
+      this.questionIndex = questionIndex
+      this.type = 'viewOperate'
+    },
+    onNextQuestion(data) {
+      const { questionIndex, question, score, updateTime, enableAnswer } = data
+      this.questionIndex = questionIndex
+      this.question = question
+      this.score = score
+      this.updateTime = updateTime
+      this.enableAnswer = enableAnswer
+      this.isBtn = !this.isBtn
+    },
+    onShowAnswer(data) {
+      const { answer, answers, enableAnswer } = data
+      this.answer = answer
+      this.answers = answers
+      this.enableAnswer = enableAnswer
+      this.isBtn = !this.isBtn
+    },
+    onChangeScore(data) {
+      const { teams } = data
+      this.computeData = teams
+    },
+    onEndRace(data) {
+      const { enableAnswer, closed } = data
+      this.enableAnswer = enableAnswer
+      this.closed = closed
+    },
+    onRename(data) {
+      const { teams} = data
+      this.initData = []
+      for (var i in teams) {
+        this.initData.push({name: teams[i]['name'], score: teams[i]['score'], teamToken: i, answer: ''})
       }
     }
+    // onAnswer(data) {
+    //   const { teamToken, activeTeam, enableAnswer } = data
+    //   this.teamToken = teamToken
+    //   this.activeTeam = activeTeam
+    //   this.enableAnswer = enableAnswer
+    // }
   },
   mounted() {
-    this.login()
-    // var client = client('judge')
-    // this.judgeObj = new Judge()
+    this.judge = new Judge()
+    const self = this
+    this.judge.onmessage = function(resp) {
+      console.log('this is judge onmessage')
+      console.log(resp)
+      const { action, data} = JSON.parse(resp)
+      switch (action) {
+        case 'connect':
+          self.onConnect(data)
+          break
+        case 'initRace':
+          self.onInitRace(data)
+          break
+        case 'beginRace':
+          self.onBeginRace(data)
+          break
+        case 'nextQuestion':
+          self.onNextQuestion(data)
+          break
+        case 'showAnswer':
+          self.onShowAnswer(data)
+          break
+        case 'changeScore':
+          self.onChangeScore(data)
+          break
+        case 'endRace':
+          self.onEndRace(data)
+          break
+        case 'rename':
+          self.onRename(data)
+          break
+        case 'answer':
+          self.onAnswer(data)
+          break
+      }
+    }
   }
 }
 </script>
