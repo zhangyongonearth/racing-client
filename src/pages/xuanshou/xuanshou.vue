@@ -90,7 +90,7 @@ export default {
       notClickC: false, // true不可点击
       notClickD: false, // true不可点击
       notClickE: false, // true不可点击
-      isSubmit: false // true不可点击
+      isSubmit: false // true不可点击控制是否可答题
     }
   },
   methods: {

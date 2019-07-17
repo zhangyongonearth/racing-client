@@ -176,7 +176,7 @@ export default {
       isSet: true, // 生成比赛按钮 false可点击
       tokens: [],
       questionIndex: 15,
-      isBtn: false, // 为true时“下一题”按钮可点击，为false时“显示答案”按钮可点击
+      isBtn: true, // 为true时“下一题”按钮可点击，为false时“显示答案”按钮可点击
       isEnd: false, // 为false时结束竞赛”按钮可点击，为true不可点击
       initData: [],
       computeData: []

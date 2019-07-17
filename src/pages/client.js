@@ -84,6 +84,7 @@ export function Team() {
     this.send({ action: 'rename', data: {newName}})
   }
 }
+
 export function Screen() {
   Client.call(this, 'screen')
 }
