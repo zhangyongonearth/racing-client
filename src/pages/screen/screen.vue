@@ -2,7 +2,7 @@
 <el-container class="container">
   <!-- 标题栏 -->
   <el-header height="100px" style="background:rgba(255,255,255,0.1);" >
-      <el-col :span="17"  style="font-size: 45px; line-height: 100px;">
+      <el-col :span="17"  style="font-size: 35px; line-height: 100px;">
         <img src="./images/logo.png" style="width: 60px; vertical-align: middle;">
         {{raceName}}
       </el-col>
@@ -11,8 +11,8 @@
         <p style="font-size: 20px;"><span class="ues-time">{{useTime.minute}}</span>分<span class="ues-time">{{useTime.second}}</span>秒</p>
       </el-col>
       <el-col :span="4" >
-        <p>{{apartment}}</p>
-        <p>{{currentDate}}</p>
+        <p>{{holder}}</p>
+        <p style="font-size: 20px;">{{currentDate}}</p>
       </el-col>
   </el-header>
   <!-- 主要内容 -->
@@ -37,35 +37,24 @@
       <el-row :span="4" class="border title title-group">
         <svg-icon icon-class="group"></svg-icon>各组战况</el-row>
       <el-row class="right-bottom">
-        <el-table
-        class="table opacity"
-        :data="tableData"
-        :row-class-name="tableRowClassName"
-        >
-        <el-table-column
-          type="index"
-          label="排名"
-          align="center">
-        </el-table-column>
-        <el-table-column
-          label="组名"
-          align="center">
-          <template slot-scope="scope">
-            <svg-icon style="float:left" icon-class="img"></svg-icon>
-            <span>{{scope.row.name}}</span>
-          </template>
-        </el-table-column>
-        <el-table-column
-          prop="score"
-          label="分数"
-          align="center">
-        </el-table-column>
-        <el-table-column
-          prop="answer"
-          label="答案"
-          align="center">
-        </el-table-column>
-        </el-table>
+        <table class="table table-striped table-inverse table-bordered">
+            <thead class="thead-inverse">
+                <tr>
+                    <th>排名</th>
+                    <th>组名</th>
+                    <th>分数</th>
+                    <th>答案</th>
+                </tr>
+            </thead>
+            <tbody is="transition-group" name="demo" tag="tbody" appear>
+                <tr :class="{'is-active':(item.teamToken === activeTeam)}" v-for="(item,index) in tableData" :key="index">
+                    <td>{{index + 1}}</td>
+                    <td>{{item.name}}</td>
+                    <td>{{item.score}}</td>
+                    <td>{{item.answer}}</td>
+                </tr>
+            </tbody>
+        </table>
       </el-row>
     </div></el-col>
   </el-main>
@@ -79,7 +68,7 @@ export default {
   name: 'screen',
   data() {
     return {
-      apartment: '网络软件研发部党支部',
+      holder: '网络软件研发部党支部',
       currentDate: new Date().getFullYear() + '-' + (new Date().getMonth() + 1) + '-' + new Date().getDate(),
       useTime: {
         minute: '00',
@@ -111,16 +100,29 @@ export default {
       }, 1000)
     },
     tableRowClassName({row, rowIndex}) {
-      // if (rowIndex % 2 === 0) {
-      //   return 'warning-row'
-      // } else {
-      //   return 'success-row'
-      // }
       if (row.index && row.index === 1) {
         return 'warning-row'
       }
     },
     onConnect(data) {
+      const {raceName, beginTime, questionIndex, question, activeTeam, teams} = data
+      if (raceName) this.raceName = raceName
+      if (beginTime) {
+        this.beginTime = beginTime
+        this.computeTime()
+      }
+      if (questionIndex) this.questionIndex = questionIndex
+      if (question) this.question = question
+      if (activeTeam) this.activeTeam = activeTeam
+      if (teams) {
+        for (var i in teams) {
+          this.tableData.push({name: teams[i]['name'], score: teams[i]['score'], teamToken: i, answer: ''})
+        }
+        this.tableData.sort((x, y) => {
+          return y['score'] - x['score']
+        })
+      }
+
       // raceName: config.raceName,
       // raceMode: config.raceMode,
       // beginTime: config.beginTime,
@@ -133,8 +135,9 @@ export default {
       console.log(data)
     },
     onInitRace(data) {
-      const {raceName} = data
+      const {raceName, holder} = data
       this.raceName = raceName
+      this.holder = holder
     },
     onBeginRace(data) {
       const { beginTime} = data
@@ -143,7 +146,7 @@ export default {
     },
     onNextQuestion(data) {
       const { questionIndex, question } = data
-      this.questionIndex = questionIndex + 1
+      this.questionIndex = questionIndex
       this.question = question
       this.correctAnswer = ''
       this.activeTeam = undefined
@@ -157,15 +160,14 @@ export default {
     },
     onChangeScore(data) {
       const { teamToken, newValue } = data
-      //      const { teams } = data
+      // var _table =
       this.tableData.forEach((v, i) => {
-        if (v.teamToken === teamToken) {
-          v.score = newValue
+        if (parseInt(v.teamToken) === teamToken) {
+          this.tableData[i]['score'] = newValue
         }
-        // this.tableData[i]['score'] = teams[v.teamToken]['score']
       })
       this.tableData.sort((x, y) => {
-        return x['score'] - y['score']
+        return y['score'] - x['score']
       })
     },
     onEndRace(data) {
@@ -180,8 +182,13 @@ export default {
       }
     },
     onAnswer(data) {
-      const { activeTeam } = data
+      const { activeTeam, teamToken } = data
       this.activeTeam = activeTeam
+      this.tableData.forEach((v, i) => {
+        if (v.teamToken === teamToken) {
+          this.tableData[i]['answer'] = '****'
+        }
+      })
     }
   },
   mounted() {
@@ -267,6 +274,7 @@ body{
 .question{
   height: 470px;
   margin-bottom: 20px;
+  font-size: 24px;
 }
 .svg-icon{
   margin-right: 5px;
@@ -292,6 +300,7 @@ body{
 background:rgba(255,255,255,0.1);
 }
 .table{
+  width: 100%;
   border-radius: 0px;
   padding: 0;
 }
@@ -306,6 +315,7 @@ th{
 }
 .answer-icon{
  padding: 20px;
+ font-size: 15ppx;
 }
 .scratch-card{
   width: 150px!important;
@@ -319,4 +329,32 @@ th{
   padding: 10px;
   font-size: 30px;
 }
+/* .demo-enter,
+.demo-leave-to {
+    opacity: 0;
+    transform: translateY(20px);
+}
+
+.demo-enter-active,
+.demo-leave-active {
+    transition: all 1s ease;
+}
+
+.demo-move {
+    transition: all 1s ease;
+} */
+td{
+  text-align: center;
+}
+table tr {
+    font-size: 20px;
+    height: 80px;
+}
+/* .is-active{
+  background:rgba(255,255,255,.5);
+} */
+.flip-list-move {
+  transition: transform 1s;
+}
+ li{ list-style: none;}
 </style>
