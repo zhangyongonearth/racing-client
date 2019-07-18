@@ -2,11 +2,11 @@
 <div class="main-xuanshou">
   <!-- 选手口令界面 -->
   <div v-if="type==='viewToken'" class="xuanshou-one">
-      <van-row :span="4" class="row-icon">
+      <van-row :span="8" class="row-icon">
         <svg-icon icon-class="cup"></svg-icon>
         <div class="one-racename">{{raceName}}</div>
       </van-row>
-      <van-row :span="5" type="flex" justify="center" class="row-name">
+      <van-row :span="8" type="flex" justify="center" class="row-name">
         <van-col :span="5">
           <van-tag
           color="#cd2323"
@@ -21,17 +21,17 @@
           class="right teamToken-right"></van-field>
         </van-col>
       </van-row>
-      <van-row :span="4" class="row-start">
+      <van-row :span="8" class="row-start">
         <van-button round class="one-start" @click="tokenLogin">登录</van-button>
       </van-row>
   </div>
   <!-- 选手名字界面 -->
   <div v-else-if="type==='viewRename'" class="xuanshou-one">
-      <van-row :span="4" class="row-icon">
+      <van-row :span="8" class="row-icon">
         <svg-icon icon-class="cup"></svg-icon>
         <div class="one-racename">{{raceName}}</div>
       </van-row>
-      <van-row :span="5" type="flex" justify="center" class="row-name">
+      <van-row :span="8" type="flex" justify="center" class="row-name">
         <van-col :span="5">
           <van-tag
           color="#cd2323"
@@ -46,7 +46,7 @@
             class="right teamname-right">{{teamName}}</van-field>
         </van-col>
       </van-row>
-      <van-row :span="4" class="row-start">
+      <van-row :span="8" class="row-start">
         <van-button round class="one-start" @click="start">开始答题</van-button>
       </van-row>
   </div>
@@ -67,7 +67,7 @@
       </van-col>
     </van-row>
     <van-row :span="4" class="row-start">
-        <van-button round :disabled="isSubmit" class="two-start" @click="submit">提交</van-button>
+        <van-button round :disabled="enableAnswer" class="two-start" @click="submit">提交</van-button>
     </van-row>
   </div>
 </div>
@@ -82,15 +82,14 @@ export default {
       raceName: '党建知识竞赛',
       teamName: '',
       teamToken: '',
-      questionIndex: 0,
-      enableAnswer: false,
+      questionIndex: 1,
       teamAnswer: [], // 存放选手选择的答案
       notClickA: false, // true不可点击
       notClickB: false, // true不可点击
       notClickC: false, // true不可点击
       notClickD: false, // true不可点击
       notClickE: false, // true不可点击
-      isSubmit: false // true不可点击控制是否可答题
+      enableAnswer: true // true不可点击控制是否可答题
     }
   },
   methods: {
@@ -190,28 +189,25 @@ export default {
     start() {
       if (this.teamName !== '') {
         this.team.rename(this.teamName)
-        localStorage.setItem('战队名字', this.teamName)
         this.type = 'viewOptions'
       } else {
         return false
       }
     },
     submit() {
-      console.log('xuanxiang0' + this.teamAnswer)
       this.teamAnswer.sort()
-      console.log('xuanxiang1' + this.teamAnswer)
       this.teamAnswer.join('')
-      console.log('xuanxiang' + this.teamAnswer)
+      console.log(this.teamAnswer)
       if (this.teamAnswer !== '') {
         this.team.answer(this.teamAnswer, this.questionIndex)
-        this.isSubmit = true
+        this.submit = true
       } else {
         return false
       }
     },
     onConnect(data) {
       const {enableAnswer, questionIndex, updateTime, activeTeam, teams} = data
-      this.enableAnswer = enableAnswer
+      this.enableAnswer = !enableAnswer
       this.questionIndex = questionIndex
       this.updateTime = updateTime
       this.activeTeam = activeTeam
@@ -220,11 +216,11 @@ export default {
     },
     onInitRace(data) {
       const {enableAnswer} = data
-      this.enableAnswer = enableAnswer
+      this.enableAnswer = !enableAnswer
     },
     onBeginRace(data) {
       const { enableAnswer, beginTime, questionIndex } = data
-      this.enableAnswer = enableAnswer
+      this.enableAnswer = !enableAnswer
       this.beginTime = beginTime
       this.questionIndex = questionIndex
     },
@@ -234,35 +230,38 @@ export default {
       this.question = question
       this.score = score
       this.updateTime = updateTime
-      this.enableAnswer = enableAnswer
+      this.enableAnswer = !enableAnswer
+      // this.notClickA = false
+      // this.notClickB = false
+      // this.notClickC = false
+      // this.notClickD = false
+      // this.notClickE = false
     },
-    // onShowAnswer(data) {
-    //   const { answer, answers, enableAnswer } = data
-    //   this.answer = answer
-    //   this.answers = answers
-    //   this.enableAnswer = enableAnswer
-    // },
-    // onChangeScore(data) {
-    //   const { teams } = data
-    //   this.teams = teams
-    // },
-    // onEndRace(data) {
-    //   const { enableAnswer, closed } = data
-    //   this.enableAnswer = enableAnswer
-    //   this.closed = closed
-    // },
-    // onRename(data) {
-    //   const { newName, teamToken } = data
-    //   this.teamName = newName
-    //   if (this.teamToken === teamToken) {
-    //     this.type = 'viewOptions'
-    //   }
-    // },
+    onShowAnswer(data) {
+      const { answer, answers, enableAnswer } = data
+      this.answer = answer
+      this.answers = answers
+      this.enableAnswer = !enableAnswer
+    },
+    onChangeScore(data) {
+      const { teams } = data
+      this.teams = teams
+    },
+    onEndRace(data) {
+      const { enableAnswer, closed } = data
+      this.submit = !enableAnswer
+      this.closed = closed
+    },
+    onRename(data) {
+      const { newName, teamToken } = data
+      this.teamName = newName
+      this.teamToken === teamToken
+    },
     onAnswer(data) {
       const { teamToken, activeTeam, enableAnswer } = data
       this.teamToken = teamToken
       this.activeTeam = activeTeam
-      this.enableAnswer = enableAnswer
+      this.enableAnswer = !enableAnswer
     }
   },
   mounted() {
@@ -307,6 +306,19 @@ export default {
 </script>
 
 <style>
+html {
+  font-size : 10px;
+}
+@media only screen and (min-width: 720px){
+  html {
+    font-size: 11.25px !important;
+  }
+}
+@media only screen and (min-width: 960px){
+  html {
+    font-size: 15px !important;
+  }
+}
 .svg-icon{
   font-size: 180px;
 }

@@ -47,6 +47,21 @@
           class="right racename-right">{{raceName}}</van-field>
       </van-col>
     </van-row>
+    <van-row :span="5" type="flex" justify="center" class="row-name">
+      <van-col :span="5">
+        <van-tag
+        color="#cd2323"
+        class="left racename-left">主办方</van-tag>
+      </van-col>
+      <van-col :span="15">
+        <van-field
+          v-model="holdName"
+          border
+          type="string"
+          placeholder="点击输入文本"
+          class="right racename-right">{{holdName}}</van-field>
+      </van-col>
+    </van-row>
     <van-row :span="5" type="flex" justify="center" class="row-name team-number">
       <van-col :span="5">
         <van-tag
@@ -75,49 +90,14 @@
     </van-row>
   </div>
   <!-- 主持人操作-开始界面 -->
-  <div v-else-if="type==='viewStart'" class="zhuchi-c">
-    <van-row :span="2" class="row-title">
-      <el-col :span="12">
-        <svg-icon class="compute-icon" icon-class="compute"></svg-icon>战队计分
-      </el-col>
-    </van-row>
-    <van-row :span="10">
-      <el-table
-        highlight-current-row
-        :data="initData">
-        <el-table-column
-          prop="name"
-          label="战队名称"
-          align="center">
-        </el-table-column>
-        <el-table-column
-          label="分数"
-          align="center">
-          <template slot-scope="scope">
-            <van-stepper
-              integer
-              v-model="scope.row.score"
-              @change="changeValue"
-              input-width="40px"
-              button-size="40px"
-              class="teamNumber-right"
-              />
-          </template>
-        </el-table-column>
-        </el-table>
-    </van-row>
-    <van-row :span="4" class="row-end">
-        <van-button class="two-start" @click="startRace">开始竞赛</van-button>
-    </van-row>
-  </div>
     <!-- 主持人操作 -->
-  <div v-else-if="type==='viewOperate'" class="zhuchi-two">
-    <van-row :span="4" class="row-number">
+  <div v-else-if="type==='viewStart'" class="zhuchi-two">
+    <van-row :span="4" class="row-number" v-show="show_btn">
       <span>
         第<span class="two-currentNumber">{{questionIndex}}</span>题
       </span>
     </van-row>
-    <van-row :span="2" type="flex" justify="space-around" class="row-btn">
+    <van-row :span="2" type="flex" justify="space-around" class="row-btn" v-show="show_btn">
         <van-col span="9">
           <van-button plain class="btn" :disabled="isBtn" @click="showAnswerbtn">显示答案</van-button>
         </van-col>
@@ -133,7 +113,7 @@
     <van-row :span="10">
       <el-table
         highlight-current-row
-        :data="computeData">
+        :data="scoreData">
         <el-table-column
           prop="name"
           label="战队名称"
@@ -146,7 +126,7 @@
             <van-stepper
               integer
               v-model="scope.row.score"
-              @change="changeValue"
+              @change="changeValue(scope.row)"
               input-width="40px"
               button-size="40px"
               class="teamNumber-right"
@@ -155,7 +135,10 @@
         </el-table-column>
         </el-table>
     </van-row>
-    <van-row :span="4" class="row-end">
+    <van-row :span="4" class="row-end" v-show="show_start_btn">
+        <van-button class="two-start" @click="startRace">开始竞赛</van-button>
+    </van-row>
+    <van-row :span="4" class="row-end" v-show="show_btn">
         <van-button :disabled="isEnd" class="two-start" @click="endRace">结束竞赛</van-button>
     </van-row>
   </div>
@@ -170,16 +153,18 @@ export default {
       type: 'viewToken',
       zhuchiToken: '',
       raceName: '',
+      holdName: '',
       setNumber: 0,
       teamNumber: 0,
       isCreate: false, // 生成口令按钮 false可点击
       isSet: true, // 生成比赛按钮 false可点击
       tokens: [],
-      questionIndex: 15,
+      show_btn: false,
+      show_start_btn: true,
+      questionIndex: 0,
       isBtn: true, // 为true时“下一题”按钮可点击，为false时“显示答案”按钮可点击
       isEnd: false, // 为false时结束竞赛”按钮可点击，为true不可点击
-      initData: [],
-      computeData: []
+      scoreData: []
     }
   },
   methods: {
@@ -198,7 +183,8 @@ export default {
     },
     // 显示得到的随机数口令
     getTokens() {
-      if (this.raceName !== '') {
+      if (this.raceName !== '' && this.holdName !== '') {
+        // this.judge.initRace(this.raceName, this.holdName, this.teamNumber)
         this.judge.initRace(this.raceName, this.teamNumber)
       } else {
         return false
@@ -211,30 +197,37 @@ export default {
     // 开始比赛按钮
     startRace() {
       this.judge.beginRace()
+      this.show_start_btn = false
+      this.show_btn = true
     },
     // 显示答案按钮
     showAnswerbtn() {
       this.judge.showAnswer(this.questionIndex)
+      this.isBtn = !this.isBtn
     },
     // 下一题按钮
     nextNumber() {
       this.judge.nextQuestion()
+      this.isBtn = !this.isBtn
     },
-    // 改变答案按钮
+    // 改变分数按钮
     changeValue(value) {
-      this.judge.changeScore(this.teamToken, value)
+      // 如何得到该行队形的token
+      this.judge.changeScore(value.teamToken, value.score)
     },
     // 结束竞赛按钮
     endRace() {
       this.judge.endRace()
     },
     onConnect(data) {
-      const {enableAnswer, questionIndex, updateTime, activeTeam} = data
+      const {enableAnswer, questionIndex, updateTime, activeTeam, teams} = data
       this.enableAnswer = enableAnswer
       this.questionIndex = questionIndex
       this.updateTime = updateTime
       this.activeTeam = activeTeam
-      // this.teams = teams
+      for (var i in teams) {
+        this.scoreData.push({name: teams[i]['name'], score: teams[i]['score'], teamToken: i, answer: ''})
+      }
       this.type = 'viewRename'
     },
     onInitRace(data) {
@@ -248,7 +241,6 @@ export default {
       this.enableAnswe = enableAnswer
       this.beginTime = beginTime
       this.questionIndex = questionIndex
-      this.type = 'viewOperate'
     },
     onNextQuestion(data) {
       const { questionIndex, question, score, updateTime, enableAnswer } = data
@@ -257,18 +249,18 @@ export default {
       this.score = score
       this.updateTime = updateTime
       this.enableAnswer = enableAnswer
-      this.isBtn = !this.isBtn
     },
     onShowAnswer(data) {
       const { answer, answers, enableAnswer } = data
       this.answer = answer
       this.answers = answers
       this.enableAnswer = enableAnswer
-      this.isBtn = !this.isBtn
     },
     onChangeScore(data) {
       const { teams } = data
-      this.computeData = teams
+      for (var i in teams) {
+        this.scoreData.push({name: teams[i]['name'], score: teams[i]['score'], teamToken: i, answer: ''})
+      }
     },
     onEndRace(data) {
       const { enableAnswer, closed } = data
@@ -277,9 +269,9 @@ export default {
     },
     onRename(data) {
       const { teams} = data
-      this.initData = []
+      this.scoreData = []
       for (var i in teams) {
-        this.initData.push({name: teams[i]['name'], score: teams[i]['score'], teamToken: i, answer: ''})
+        this.scoreData.push({name: teams[i]['name'], score: teams[i]['score'], teamToken: i, answer: ''})
       }
     }
     // onAnswer(data) {
@@ -331,6 +323,19 @@ export default {
 </script>
 
 <style>
+/* html {
+  font-size : 10px;
+}
+@media only screen and (min-width: 720px){
+  html {
+    font-size: 11.25px !important;
+  }
+}
+@media only screen and (min-width: 960px){
+  html {
+    font-size: 15px !important;
+  }
+} */
 .row-number{
   background:#cd2323;
   font-size: 30px;
@@ -362,7 +367,7 @@ export default {
   float: left;
   font-size: 20px;
   margin: 2vh auto 0 4vh;
-  width: 100vh;
+  width: 30vh;
 }
 .compute-icon{
   font-size: 30px!important;
@@ -379,14 +384,14 @@ export default {
   padding-top:3vh;
 }
 .svg-icon{
-  font-size: 180px;
+  font-size: 15rem;
 }
 .row-icon{
   text-align: center;
   padding-top: 6vh;
 }
 .one-platform{
-  font-size: 40px;
+  font-size: 2rem;
   color: #cd2323;
 }
 .van-row{
@@ -407,7 +412,7 @@ export default {
   border: 1px solid #cca;
 }
 .row-name{
-  padding: 8vh 0 4vh 0;
+  padding: 3rem 0 2rem 0;
 }
 .team-number{
   padding: 0;
@@ -428,5 +433,8 @@ export default {
   width: 40vh!important;
   background: #cd2323!important;
   color: #fff!important;
+}
+.el-table{
+  table-layout:fixed;
 }
 </style>
