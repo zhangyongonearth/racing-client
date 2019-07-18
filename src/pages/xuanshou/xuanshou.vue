@@ -141,7 +141,6 @@ export default {
       // this.teams = teams
       if (this.teamToken === localStorage.getItem('战队口令')) {
         // this.type === localStorage.getItem('当前界面') // 有问题：设置显示那些组件 要用localStorage 不行的？
-        // console.log('type' + this.type)
         if (enableAnswer) this.enableAnswer = enableAnswer
         if (questionIndex) this.questionIndex = questionIndex
         if (updateTime) this.updateTime = updateTime

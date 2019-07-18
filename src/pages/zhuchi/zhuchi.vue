@@ -230,7 +230,7 @@ export default {
       //   this.scoreData.push({name: teams[i]['name'], score: teams[i]['score'], teamToken: i, answer: ''})
       // }
       if (this.zhuchiToken === localStorage.getItem('主持口令')) {
-        // this.type = localStorage.getItem('当前界面') //有问题：设置显示那些组件 要用localStorage？不行的
+        // this.type = localStorage.getItem('当前界面') //有问题：设置显示那些组件 要用localStorage？
         if (enableAnswer) this.enableAnswer = enableAnswer
         if (questionIndex) this.questionIndex = questionIndex
         if (updateTime) this.updateTime = updateTime
