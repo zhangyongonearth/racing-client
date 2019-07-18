@@ -23,7 +23,7 @@
        </van-col>
     </van-row>
     <van-row :span="4" class="row-start">
-      <van-button round class="one-start" @click="tokenLogin">登录</van-button>
+      <van-button round class="one-start" @click="handleLogin">登录</van-button>
     </van-row>
   </div>
   <!-- 主持比赛名称+队伍数量界面 -->
@@ -72,7 +72,7 @@
         <van-stepper
           integer
           v-model="setNumber"
-          @change="changeNum"
+          @change="handleSetNumber"
           input-width="60px"
           button-size="50px"
           class="teamNumber-right"
@@ -80,29 +80,29 @@
       </van-col>
     </van-row>
     <van-row :span="2" class="row-gettoken">
-      <van-col offset="12" span="12"><van-button :disabled="isCreate" class="gettoken-button" @click="getTokens">生成口令</van-button></van-col>
+      <van-col offset="12" span="12"><van-button :disabled="isCreate" class="gettoken-button" @click="handleGetTokens">生成口令</van-button></van-col>
     </van-row>
     <van-row :span="4" class="row-tokens" gutter="20" type="flex" justify="center">
       <van-col class="random-value" v-for="(random) in tokens" v-bind:key="random"><u>{{random}}</u></van-col>
     </van-row>
     <van-row :span="4" class="row-start">
-      <van-button round class="one-start" :disabled="isSet" @click="setRace">生成竞赛</van-button>
+      <van-button round class="one-start" :disabled="isSet" @click="handleSetRace">生成竞赛</van-button>
     </van-row>
   </div>
   <!-- 主持人操作-开始界面 -->
     <!-- 主持人操作 -->
   <div v-else-if="type==='viewStart'" class="zhuchi-two">
-    <van-row :span="4" class="row-number" v-show="show_btn">
+    <van-row :span="4" class="row-number" v-show="!show_btn">
       <span>
         第<span class="two-currentNumber">{{questionIndex}}</span>题
       </span>
     </van-row>
-    <van-row :span="2" type="flex" justify="space-around" class="row-btn" v-show="show_btn">
+    <van-row :span="2" type="flex" justify="space-around" class="row-btn" v-show="!show_btn">
         <van-col span="9">
-          <van-button plain class="btn" :disabled="isBtn" @click="showAnswerbtn">显示答案</van-button>
+          <van-button plain class="btn" :disabled="isBtn" @click="handleShowAnswer">显示答案</van-button>
         </van-col>
         <van-col span="9">
-          <van-button plain class="btn" :disabled="!isBtn" @click="nextNumber">下一题</van-button>
+          <van-button plain class="btn" :disabled="!isBtn" @click="handleNextQuestion">下一题</van-button>
         </van-col>
     </van-row>
     <van-row :span="2" class="row-title">
@@ -126,7 +126,7 @@
             <van-stepper
               integer
               v-model="scope.row.score"
-              @change="changeValue(scope.row)"
+              @change="handleChangeScore(scope.row)"
               input-width="40px"
               button-size="40px"
               class="teamNumber-right"
@@ -135,11 +135,11 @@
         </el-table-column>
         </el-table>
     </van-row>
-    <van-row :span="4" class="row-end" v-show="show_start_btn">
-        <van-button class="two-start" @click="startRace">开始竞赛</van-button>
-    </van-row>
     <van-row :span="4" class="row-end" v-show="show_btn">
-        <van-button :disabled="isEnd" class="two-start" @click="endRace">结束竞赛</van-button>
+        <van-button class="two-start" @click="handleBeginRace">开始竞赛</van-button>
+    </van-row>
+    <van-row :span="4" class="row-end" v-show="!show_btn">
+        <van-button :disabled="isEnd" class="two-start" @click="handleEndRace">结束竞赛</van-button>
     </van-row>
   </div>
 </div>
@@ -159,8 +159,7 @@ export default {
       isCreate: false, // 生成口令按钮 false可点击
       isSet: true, // 生成比赛按钮 false可点击
       tokens: [],
-      show_btn: false,
-      show_start_btn: true,
+      show_btn: true,
       questionIndex: 0,
       isBtn: true, // 为true时“下一题”按钮可点击，为false时“显示答案”按钮可点击
       isEnd: false, // 为false时结束竞赛”按钮可点击，为true不可点击
@@ -169,20 +168,22 @@ export default {
   },
   methods: {
     // 主持人口令登录按钮
-    tokenLogin() {
+    handleLogin() {
       if (this.zhuchiToken !== '') {
         localStorage.setItem('主持口令', this.zhuchiToken)
         this.judge.login(this.zhuchiToken)
+        this.type = 'viewRename'
+        localStorage.setItem('当前界面', this.type)
       } else {
         return false
       }
     },
     // 改变队伍数量按钮
-    changeNum(value) {
+    handleSetNumber(value) {
       this.teamNumber = value
     },
     // 显示得到的随机数口令
-    getTokens() {
+    handleGetTokens() {
       if (this.raceName !== '' && this.holdName !== '') {
         // this.judge.initRace(this.raceName, this.holdName, this.teamNumber)
         this.judge.initRace(this.raceName, this.teamNumber)
@@ -191,44 +192,55 @@ export default {
       }
     },
     // 生成竞赛按钮
-    setRace() {
+    handleSetRace() {
       this.type = 'viewStart'
+      localStorage.setItem('当前界面', this.type)
     },
     // 开始比赛按钮
-    startRace() {
+    handleBeginRace() {
       this.judge.beginRace()
-      this.show_start_btn = false
-      this.show_btn = true
+      this.show_btn = false
     },
     // 显示答案按钮
-    showAnswerbtn() {
+    handleShowAnswer() {
       this.judge.showAnswer(this.questionIndex)
       this.isBtn = !this.isBtn
     },
     // 下一题按钮
-    nextNumber() {
+    handleNextQuestion() {
       this.judge.nextQuestion()
       this.isBtn = !this.isBtn
     },
     // 改变分数按钮
-    changeValue(value) {
+    handleChangeScore(value) {
       // 如何得到该行队形的token
       this.judge.changeScore(value.teamToken, value.score)
     },
     // 结束竞赛按钮
-    endRace() {
+    handleEndRace() {
       this.judge.endRace()
     },
     onConnect(data) {
       const {enableAnswer, questionIndex, updateTime, activeTeam, teams} = data
-      this.enableAnswer = enableAnswer
-      this.questionIndex = questionIndex
-      this.updateTime = updateTime
-      this.activeTeam = activeTeam
-      for (var i in teams) {
-        this.scoreData.push({name: teams[i]['name'], score: teams[i]['score'], teamToken: i, answer: ''})
+      // this.enableAnswer = enableAnswer
+      // this.questionIndex = questionIndex
+      // this.updateTime = updateTime
+      // this.activeTeam = activeTeam
+      // for (var i in teams) {
+      //   this.scoreData.push({name: teams[i]['name'], score: teams[i]['score'], teamToken: i, answer: ''})
+      // }
+      if (this.zhuchiToken === localStorage.getItem('主持口令')) {
+        // this.type = localStorage.getItem('当前界面') //有问题：设置显示那些组件 要用localStorage？不行的
+        if (enableAnswer) this.enableAnswer = enableAnswer
+        if (questionIndex) this.questionIndex = questionIndex
+        if (updateTime) this.updateTime = updateTime
+        if (activeTeam) this.activeTeam = activeTeam
+        if (teams) {
+          for (var j in teams) {
+            this.scoreData.push({name: teams[j]['name'], score: teams[j]['score'], teamToken: j, answer: ''})
+          }
+        }
       }
-      this.type = 'viewRename'
     },
     onInitRace(data) {
       const {teamTokens} = data

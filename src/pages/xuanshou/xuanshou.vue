@@ -22,7 +22,7 @@
         </van-col>
       </van-row>
       <van-row :span="8" class="row-start">
-        <van-button round class="one-start" @click="tokenLogin">登录</van-button>
+        <van-button round class="one-start" @click="handleLogin">登录</van-button>
       </van-row>
   </div>
   <!-- 选手名字界面 -->
@@ -47,7 +47,7 @@
         </van-col>
       </van-row>
       <van-row :span="8" class="row-start">
-        <van-button round class="one-start" @click="start">开始答题</van-button>
+        <van-button round class="one-start" @click="handleRename">开始答题</van-button>
       </van-row>
   </div>
   <!-- 选项界面 -->
@@ -59,15 +59,17 @@
     </van-row>
     <van-row type="flex" justify="space-between" class="row-options">
       <van-col class="col-options">
-        <van-button id="btnA" :disable="notClickA" @click="clickA" class="option-button">A</van-button>
-        <van-button id="btnB" :disable="notClickB" @click="clickB" class="option-button">B</van-button>
-        <van-button id="btnC" :disable="notClickC" @click="clickC" class="option-button">C</van-button>
-        <van-button id="btnD" :disable="notClickD" @click="clickD" class="option-button">D</van-button>
-        <van-button id="btnE" :disable="notClickE" @click="clickE" class="option-button">E</van-button>
+        <van-button
+        v-for="(option) in options"
+        :key="option"
+        @click="select(option)"
+        :class="teamAnswer.indexOf(option) == -1 ? 'option-button':'option-button option-button-active'"
+        >{{option}}
+        </van-button>
       </van-col>
     </van-row>
     <van-row :span="4" class="row-start">
-        <van-button round :disabled="enableAnswer" class="two-start" @click="submit">提交</van-button>
+        <van-button round :disabled="enableAnswer" class="two-start" @click="handleAnswer">提交</van-button>
     </van-row>
   </div>
 </div>
@@ -84,135 +86,68 @@ export default {
       teamToken: '',
       questionIndex: 1,
       teamAnswer: [], // 存放选手选择的答案
-      notClickA: false, // true不可点击
-      notClickB: false, // true不可点击
-      notClickC: false, // true不可点击
-      notClickD: false, // true不可点击
-      notClickE: false, // true不可点击
-      enableAnswer: true // true不可点击控制是否可答题
+      options: ['A', 'B', 'C', 'D', 'E'],
+      enableAnswer: true// true不可点击控制是否可答题
     }
   },
   methods: {
-    clickA() {
-      if (this.notClickA === true) {
+    select(option) {
+      // -1表示其中不包含元素
+      if (this.teamAnswer.indexOf(option) !== -1) {
         for (var i = 0; i < this.teamAnswer.length; i++) {
-          if (this.teamAnswer[i] === 'A') {
+          if (this.teamAnswer[i] === option) {
             this.teamAnswer.splice(i, 1)
-            document.getElementById('btnA').style.backgroundColor = '#fff'
-            document.getElementById('btnA').style.color = '#000'
           }
         }
       } else {
-        this.teamAnswer.push('A')
-        document.getElementById('btnA').style.backgroundColor = '#f9ab00'
-        document.getElementById('btnA').style.color = '#fff'
+        this.teamAnswer.push(option)
       }
-      this.notClickA = !this.notClickA
-      console.log(this.teamAnswer)
     },
-    clickB() {
-      if (this.notClickB === true) {
-        for (var i = 0; i < this.teamAnswer.length; i++) {
-          if (this.teamAnswer[i] === 'B') {
-            this.teamAnswer.splice(i, 1)
-            document.getElementById('btnB').style.backgroundColor = '#fff'
-            document.getElementById('btnB').style.color = '#000'
-          }
-        }
-      } else {
-        this.teamAnswer.push('B')
-        document.getElementById('btnB').style.backgroundColor = '#f9ab00'
-        document.getElementById('btnB').style.color = '#fff'
-      }
-      this.notClickB = !this.notClickB
-      console.log(this.teamAnswer)
-    },
-    clickC() {
-      if (this.notClickC === true) {
-        for (var i = 0; i < this.teamAnswer.length; i++) {
-          if (this.teamAnswer[i] === 'C') {
-            this.teamAnswer.splice(i, 1)
-            document.getElementById('btnC').style.backgroundColor = '#fff'
-            document.getElementById('btnC').style.color = '#000'
-          }
-        }
-      } else {
-        this.teamAnswer.push('C')
-        document.getElementById('btnC').style.backgroundColor = '#f9ab00'
-        document.getElementById('btnC').style.color = '#fff'
-      }
-      this.notClickC = !this.notClickC
-      console.log(this.teamAnswer)
-    },
-    clickD() {
-      if (this.notClickD === true) {
-        for (var i = 0; i < this.teamAnswer.length; i++) {
-          if (this.teamAnswer[i] === 'D') {
-            this.teamAnswer.splice(i, 1)
-            document.getElementById('btnD').style.backgroundColor = '#fff'
-            document.getElementById('btnD').style.color = '#000'
-          }
-        }
-      } else {
-        this.teamAnswer.push('D')
-        document.getElementById('btnD').style.backgroundColor = '#f9ab00'
-        document.getElementById('btnD').style.color = '#fff'
-      }
-      this.notClickD = !this.notClickD
-      console.log(this.teamAnswer)
-    },
-    clickE() {
-      if (this.notClickE === true) {
-        for (var i = 0; i < this.teamAnswer.length; i++) {
-          if (this.teamAnswer[i] === 'E') {
-            this.teamAnswer.splice(i, 1)
-            document.getElementById('btnE').style.backgroundColor = '#fff'
-            document.getElementById('btnE').style.color = '#000'
-          }
-        }
-      } else {
-        this.teamAnswer.push('E')
-        document.getElementById('btnE').style.backgroundColor = '#f9ab00'
-        document.getElementById('btnE').style.color = '#fff'
-      }
-      this.notClickE = !this.notClickE
-      console.log(this.teamAnswer)
-    },
-    tokenLogin() {
+    handleLogin() {
       if (this.teamToken !== '') {
         localStorage.setItem('战队口令', this.teamToken)
         this.team.login(this.teamToken)
+        this.type = 'viewRename'
+        localStorage.setItem('当前界面', this.type)
       } else {
         return false
       }
     },
-    start() {
+    handleRename() {
       if (this.teamName !== '') {
         this.team.rename(this.teamName)
         this.type = 'viewOptions'
+        localStorage.setItem('当前界面', this.type)
       } else {
         return false
       }
     },
-    submit() {
+    handleAnswer() {
       this.teamAnswer.sort()
       this.teamAnswer.join('')
       console.log(this.teamAnswer)
       if (this.teamAnswer !== '') {
         this.team.answer(this.teamAnswer, this.questionIndex)
-        this.submit = true
       } else {
         return false
       }
     },
     onConnect(data) {
       const {enableAnswer, questionIndex, updateTime, activeTeam, teams} = data
-      this.enableAnswer = !enableAnswer
-      this.questionIndex = questionIndex
-      this.updateTime = updateTime
-      this.activeTeam = activeTeam
-      this.teams = teams
-      this.type = 'viewRename'
+      // this.enableAnswer = !enableAnswer
+      // this.questionIndex = questionIndex
+      // this.updateTime = updateTime
+      // this.activeTeam = activeTeam
+      // this.teams = teams
+      if (this.teamToken === localStorage.getItem('战队口令')) {
+        // this.type === localStorage.getItem('当前界面') // 有问题：设置显示那些组件 要用localStorage 不行的？
+        // console.log('type' + this.type)
+        if (enableAnswer) this.enableAnswer = enableAnswer
+        if (questionIndex) this.questionIndex = questionIndex
+        if (updateTime) this.updateTime = updateTime
+        if (activeTeam) this.activeTeam = activeTeam
+        if (teams) this.teams = teams
+      }
     },
     onInitRace(data) {
       const {enableAnswer} = data
@@ -231,11 +166,7 @@ export default {
       this.score = score
       this.updateTime = updateTime
       this.enableAnswer = !enableAnswer
-      // this.notClickA = false
-      // this.notClickB = false
-      // this.notClickC = false
-      // this.notClickD = false
-      // this.notClickE = false
+      this.teamAnswer = []
     },
     onShowAnswer(data) {
       const { answer, answers, enableAnswer } = data
@@ -249,7 +180,7 @@ export default {
     },
     onEndRace(data) {
       const { enableAnswer, closed } = data
-      this.submit = !enableAnswer
+      this.enableAnswer = !enableAnswer
       this.closed = closed
     },
     onRename(data) {
@@ -383,12 +314,13 @@ html {
 .option-button{
   font-size: 35px!important;
   width: 40vh;
-  background: lightcoral;
   border: 1px solid #000!important;
   margin: 1.5vh!important;
+  background: #fff!important;
+  color: #000!important;
 }
-/* .button-option:focus{
-  color:#fff;
-  background: #f9ab00;
-} */
+.option-button-active{
+  background: #f9ab00!important;
+  color: #fff!important;
+}
 </style>
