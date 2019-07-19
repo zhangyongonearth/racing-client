@@ -3,7 +3,7 @@
   <!-- 标题栏 -->
   <el-header height="100px" style="background:rgba(255,255,255,0.1);" >
       <el-col :span="17"  style="font-size: 35px; line-height: 100px;">
-        <img src="./images/logo.png" style="width: 60px; vertical-align: middle;">
+        <img src="./images/logo.png" style="vertical-align: middle;">
         {{raceName}}
       </el-col>
       <el-col :span="3" >
@@ -46,14 +46,14 @@
                     <th>答案</th>
                 </tr>
             </thead>
-            <tbody is="transition-group" name="demo" tag="tbody" appear>
-                <tr :class="{'is-active':(item.teamToken === activeTeam)}" v-for="(item,index) in tableData" :key="index">
+            <transition-group name="flip-list" tag="tbody">
+                <tr :class="{'is-active':(item.teamToken === activeTeam)}" v-for="(item,index) in tableData" :key="item.teamToken">
                     <td>{{index + 1}}</td>
                     <td>{{item.name}}</td>
                     <td>{{item.score}}</td>
                     <td>{{item.answer}}</td>
                 </tr>
-            </tbody>
+            </transition-group>
         </table>
       </el-row>
     </div></el-col>
@@ -68,13 +68,13 @@ export default {
   name: 'screen',
   data() {
     return {
-      holder: '网络软件研发部党支部',
+      holder: '等待主持人输入主办方',
       currentDate: new Date().getFullYear() + '-' + (new Date().getMonth() + 1) + '-' + new Date().getDate(),
       useTime: {
         minute: '00',
         second: '00'
       },
-      raceName: '践行社会主义核心价值观之知识竞赛',
+      raceName: '等待主持人输入比赛名称',
       beginTime: '', //
       correctAnswer: '',
       teamAnswer: '',
@@ -122,16 +122,6 @@ export default {
           return y['score'] - x['score']
         })
       }
-
-      // raceName: config.raceName,
-      // raceMode: config.raceMode,
-      // beginTime: config.beginTime,
-      // enableAnswer: state.enableAnswer,
-      // questionIndex: state.questionIndex,
-      // question: state.question,
-      // updateTime: state.updateTime,
-      // activeTeam: state.activeTeam,
-      // teams: state.teams // 以防该主持人在比赛过程中刷新
       console.log(data)
     },
     onInitRace(data) {
@@ -304,9 +294,6 @@ background:rgba(255,255,255,0.1);
   border-radius: 0px;
   padding: 0;
 }
-.bg-green{
-  color: green
-}
 .el-table__row{
   height: 70px;
 }
@@ -315,34 +302,11 @@ th{
 }
 .answer-icon{
  padding: 20px;
- font-size: 15ppx;
+ font-size: 15px;
 }
-.scratch-card{
-  width: 150px!important;
-  height: 60px!important;
-}
-.all-answer{
-  text-align: center;
-}
-.scratch-card-result{
-  text-align: center;
-  padding: 10px;
-  font-size: 30px;
-}
-/* .demo-enter,
-.demo-leave-to {
-    opacity: 0;
-    transform: translateY(20px);
-}
-
-.demo-enter-active,
-.demo-leave-active {
-    transition: all 1s ease;
-}
-
-.demo-move {
-    transition: all 1s ease;
-} */
+/* .flip-list-move,.flip-list-enter-active, .flip-list-leave-active {transition: 1s;}
+.flip-list-leave-active{position:absolute;}
+.flip-list-enter, .flip-list-leave-to{opacity: 0;transform: translateY(30px);} */
 td{
   text-align: center;
 }
@@ -350,11 +314,10 @@ table tr {
     font-size: 20px;
     height: 80px;
 }
-/* .is-active{
-  background:rgba(255,255,255,.5);
-} */
-.flip-list-move {
+.flip-list-move{
   transition: transform 1s;
 }
- li{ list-style: none;}
+.is-active{
+  background:rgba(0,0,0,.1);
+}
 </style>
