@@ -75,7 +75,7 @@ export default {
       raceName: '党建知识竞赛',
       teamToken: '',
       teamName: '',
-      questionIndex: 1,
+      questionIndex: 0,
       teamAnswer: [], // 存放选手选择的答案
       options: ['A', 'B', 'C', 'D', 'E'],
       enableAnswer: true// true不可点击控制是否可答题
@@ -86,7 +86,7 @@ export default {
       if (this.teamToken !== '') {
         localStorage.setItem('战队口令', this.teamToken)
         this.team.login(this.teamToken)
-        this.step = 'ready'
+        // this.step = 'ready'
         // 若type存在且等于viewStart,则进入到选项界面。否则type不存在（存储type）或者是等于viewReanme则进入到命名界面。
         // if (localStorage.getItem('当前界面') && localStorage.getItem('当前界面') === 'viewStart') {
         //   this.type = 'viewOptions'
@@ -130,15 +130,19 @@ export default {
     },
     onConnect(data) {
       const {enableAnswer, questionIndex, updateTime, activeTeam, teams} = data
-      // ？？？缺少判断是否处于viewRenam界面，也就是队伍命名界面
-      if (enableAnswer) this.enableAnswer = enableAnswer
-      if (questionIndex > 1) {
-        // ？？？缺少选项点击时黄色背景，主持未点击下一题时选项的黄色颜色
-        this.questionIndex = questionIndex
+      var self = this
+      if (teams && teams[self.teamToken]) {
+        if (teams[self.teamToken]['name']) {
+          this.step = 'submit'
+        } else {
+          this.step = 'ready'
+        }
       }
-      if (updateTime) this.updateTime = updateTime
-      if (activeTeam) this.activeTeam = activeTeam
-      if (teams) this.teams = teams
+      this.enableAnswer = enableAnswer
+
+      this.questionIndex = questionIndex
+      this.updateTime = updateTime
+      this.activeTeam = activeTeam
     },
     onInitRace(data) {
       const {enableAnswer} = data
