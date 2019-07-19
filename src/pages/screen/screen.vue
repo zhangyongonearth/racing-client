@@ -165,11 +165,17 @@ export default {
       clearInterval(this.timer)
     },
     onRename(data) {
-      const { teams} = data
-      this.tableData = []
-      for (var i in teams) {
-        this.tableData.push({name: teams[i]['name'], score: teams[i]['score'], teamToken: i, answer: ''})
-      }
+      const {token, name} = data
+      this.tableData.forEach((v, i) => {
+        if (v.teamToken === token) {
+          this.tableData[i]['name'] = name
+        }
+      })
+      // const { teams} = data
+      // this.tableData = []
+      // for (var i in teams) {
+      //   this.tableData.push({name: teams[i]['name'], score: teams[i]['score'], teamToken: i, answer: ''})
+      // }
     },
     onAnswer(data) {
       const { activeTeam, teamToken } = data
