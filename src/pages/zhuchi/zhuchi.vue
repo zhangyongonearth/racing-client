@@ -1,14 +1,14 @@
 <template>
 <div>
   <!-- 主持口令登录界面 -->
-  <van-row v-show="step==='login'|| step==='rename'" style="height:50vh;line-height:50vh;">
+  <van-row v-show="step==='login'|| step==='init'" style="height:50vh;line-height:50vh;">
     <svg-icon icon-class="cup" style="vertical-align: middle;font-size:15rem;"></svg-icon>
   </van-row>
-  <van-row  v-show="step==='login'"  style="height:15vh"></van-row>
-  <van-row  v-show="step==='login'|| step==='rename'" class="platform" style="height:10vh">
+  <!-- <van-row  v-show="step==='login'"  style="height:15vh"></van-row> -->
+  <van-row  v-show="step==='login'|| step==='init'" class="platform" style="height:10vh">
     <span> 网络软件研发部抢答系统</span>
   </van-row>
-  <van-row  v-show="step==='rename'"  style="height:15vh"></van-row>
+  <!-- <van-row  v-show="step==='init'"  style="height:15vh"></van-row> -->
   <van-row  v-show="step==='login'"  type="flex" justify="center" style="margin-top:10vh; height:10vh" >
     <van-col :span="5">
       <van-tag
@@ -27,7 +27,7 @@
   <van-row  v-show="step==='login'"  style="margin-top:10vh; height:10vh;" >
     <van-button round class="one-start" @click="handleLogin">登录</van-button>
   </van-row>
-  <van-row  v-show="step==='rename'" style="height:10vh" type="flex" justify="center" >
+  <van-row  v-show="step==='init'" style="height:10vh" type="flex" justify="center" >
     <van-col span="5">
       <van-tag
       color="#cd2323"
@@ -42,7 +42,7 @@
         class="right racename-right">{{raceName}}</van-field>
     </van-col>
   </van-row>
-  <van-row  v-show="step==='rename'" style="height:10vh" type="flex" justify="center"  >
+  <van-row  v-show="step==='init'" style="height:10vh" type="flex" justify="center"  >
     <van-col span="5">
       <van-tag
       color="#cd2323"
@@ -57,7 +57,7 @@
         class="right racename-right">{{holder}}</van-field>
     </van-col>
   </van-row>
-  <van-row  v-show="step==='rename'" style="height:10vh" type="flex" justify="center" class1="row-input team-number">
+  <van-row  v-show="step==='init'" style="height:10vh" type="flex" justify="center" class1="row-input team-number">
     <van-col span="5">
       <van-tag
       color="#cd2323"
@@ -73,37 +73,29 @@
       />
     </van-col>
   </van-row>
-  <!-- <van-row  style="height:10vh"  class1="row-gettoken">
-    <van-col offset="12" span="12">
-      <van-button :disabled="isCreate" class="gettoken-button" @click="handleGetTokens">生成口令</van-button>
-    </van-col>
-  </van-row>
-  <van-row  style="height:10vh" class1="row-tokens" gutter="20" type="flex" justify="center">
-    <van-col class="random-value" v-for="(random) in tokens" :key="random"><u>{{random}}</u></van-col>
-  </van-row> -->
-  <van-row v-show="step==='rename'" style="height:10vh" class1="row-button">
+  <van-row v-show="step==='init'" style="height:10vh" class1="row-button">
     <van-button round class="one-start"  @click="handleInitRace">生成竞赛</van-button>
   </van-row>
-  <van-row v-show="step==='operate'" style="height:10vh; line-height:10vh;" class="row-number" >
+  <van-row v-show="step==='started'" style="height:10vh; line-height:10vh;" class="row-number" >
     <span>
       第<span class="two-currentNumber">{{questionIndex}}</span>题
     </span>
   </van-row>
-  <van-row v-show="step==='operate'" style="height:10vh; line-height:10vh;" type="flex" justify="space-around" >
+  <van-row v-show="step==='started'" style="height:10vh; line-height:10vh;" type="flex" justify="space-around" >
       <van-col span="9">
-        <van-button plain class="btn" :disabled="isBtn" @click="handleShowAnswer">显示答案</van-button>
+        <van-button plain class="btn" :disabled="disableShowAnswer || isEnd" @click="handleShowAnswer">显示答案</van-button>
       </van-col>
       <van-col span="9">
-        <van-button plain class="btn" :disabled="!isBtn" @click="handleNextQuestion">下一题</van-button>
+        <van-button plain class="btn" :disabled="!disableShowAnswer || isEnd" @click="handleNextQuestion">下一题</van-button>
       </van-col>
   </van-row>
-  <van-row v-show="step==='operate'" style="height:10vh; line-height:10vh; padding-left:4vh" class="row-title">
+  <van-row v-show="step==='started'" style="height:10vh; line-height:10vh; padding-left:4vh" class="row-title">
       <span style="vertical-align: bottom;">
         <svg-icon class="compute-icon" icon-class="compute"></svg-icon>
         战队计分
       </span>
   </van-row>
-  <van-row v-show="step==='operate'" style="height:70vh" >
+  <van-row v-show="step==='started'" style="height:70vh" >
     <el-table
       highlight-current-row
       :data="scoreData">
@@ -119,6 +111,7 @@
           <van-stepper
             integer
             v-model="scope.row.score"
+            min="0"
             @change="handleChangeScore(scope.row)"
             input-width="40px"
             button-size="40px"
@@ -128,14 +121,14 @@
       </el-table-column>
       </el-table>
   </van-row>
-  <van-row v-show="step==='gettokens'" style="height:80vh;line-height:15vh">
+  <van-row v-show="step==='ready'" style="height:80vh;line-height:15vh">
     <van-row v-for="(token) in tokens" :key="token">{{token}}</van-row>
   </van-row>
-  <van-row v-show="step==='gettokens'" style="height:10vh;line-height:10vh;"  >
+  <van-row v-show="step==='ready'" style="height:10vh;line-height:10vh;"  >
       <van-button style="vertical-align: middle;" class="two-start" @click="handleBeginRace">开始竞赛</van-button>
   </van-row>
-  <van-row v-show="step==='operate'" style="height:10vh;margin-top:10vh;" >
-      <van-button :disabled="isEnd" class="two-start" @click="handleEndRace">结束竞赛</van-button>
+  <van-row v-show="step==='started'" style="height:10vh;margin-top:10vh;" >
+      <van-button style="vertical-align: middle;" :disabled="isEnd" class="two-start" @click="handleEndRace">结束竞赛</van-button>
   </van-row>
 </div>
 </template>
@@ -146,26 +139,60 @@ export default {
   name: 'Judge',
   data() {
     return {
-      step: 'login', // login,rename,gettokens,operate
+      step: 'login', // login：未登录,init：初始化,ready：显示tokens,started：进行中
       zhuchiToken: '',
       raceName: '',
       holder: '',
       teamNumber: 4,
       tokens: [],
-      show_btn: true, // true是开始竞赛界面。false是结束竞赛界面
       questionIndex: 0,
-      isBtn: true, // 为true时“下一题”按钮可点击，为false时“显示答案”按钮可点击
-      isEnd: false, // 为false时结束竞赛”按钮可点击，为true不可点击
-      scoreData: []
+      disableShowAnswer: true, // 为true时“下一题”按钮可点击，为false时“显示答案”按钮可点击
+      scoreData: [], // 通过watch this.teams自动更新
+      serverTeams: undefined, // 保存后台返回的teams数据
+      isEnd: false
+    }
+  },
+  watch: {
+    serverTeams() {
+      this.scoreData = []
+      for (var i in this.serverTeams) {
+        this.scoreData.push({name: this.serverTeams[i]['name'], score: this.serverTeams[i]['score'], teamToken: i, answer: ''})
+      }
     }
   },
   methods: {
+    onConnect(data) {
+      const {raceName, beginTime, endTime, holder, teamTokens, questionIndex, teams} = data
+      // 只要点击过“开始比赛”，就不需要再次显示tokens，此时可以点击“显示答案”
+      if (endTime) {
+        this.step = 'init'
+        return
+      }
+      if (beginTime) {
+        this.step = 'started'
+        this.questionIndex = questionIndex
+        this.disableShowAnswer = false
+        if (teams) { this.serverTeams = teams }
+      } else {
+        // 没有点击过“开始比赛”
+        if (teamTokens && teamTokens.length > 0) {
+          this.step = 'ready'
+          this.raceName = raceName
+          this.holder = holder
+          this.tokens = teamTokens
+          this.questionIndex = questionIndex
+          if (teams) { this.serverTeams = teams }
+        } else {
+          this.step = 'init'
+        }
+      }
+    },
     // 主持人口令登录按钮
     handleLogin() {
       if (this.zhuchiToken !== '') {
         localStorage.setItem('主持口令', this.zhuchiToken)
         this.judge.login(this.zhuchiToken)
-        this.step = 'rename'
+        this.step = 'init'
       } else {
         return false
       }
@@ -174,7 +201,6 @@ export default {
     handleInitRace() {
       if (this.raceName !== '' && this.holder !== '') {
         this.judge.initRace(this.raceName, this.holder, this.teamNumber)
-        this.step = 'gettokens'
       } else {
         return false
       }
@@ -182,17 +208,16 @@ export default {
     // 开始比赛按钮
     handleBeginRace() {
       this.judge.beginRace()
-      this.step = 'operate'
     },
     // 显示答案按钮
     handleShowAnswer() {
       this.judge.showAnswer(this.questionIndex)
-      this.isBtn = !this.isBtn
+      this.disableShowAnswer = !this.disableShowAnswer
     },
     // 下一题按钮
     handleNextQuestion() {
       this.judge.nextQuestion()
-      this.isBtn = !this.isBtn
+      this.disableShowAnswer = !this.disableShowAnswer
     },
     // 改变分数按钮
     handleChangeScore(value) {
@@ -202,53 +227,18 @@ export default {
     handleEndRace() {
       this.judge.endRace()
     },
-    onConnect(data) {
-      const {raceName, holder, raceMode, beginTime, enableAnswer, questionIndex, updateTime, activeTeam, teams} = data
-      // if(raceName==='' &&holdName==='') 服务端添加holdName后，该这么写。
-      if (raceName === '' || holder === '') {
-        this.type = 'viewRename'
-        // ？？？缺少口令生成后如何中断恢复
-      } else {
-        this.type = 'viewStart'
-      }
-      console.log(raceMode, beginTime)
-      if (enableAnswer) this.enableAnswer = enableAnswer
-      if (questionIndex > 0) {
-        // 若questionIndex大于0，显示有结束竞赛按钮的界面。
-        this.questionIndex = questionIndex
-        this.show_btn = false
-      } else {
-        this.show_btn = true
-      }
-      if (updateTime) this.updateTime = updateTime
-      if (activeTeam) this.activeTeam = activeTeam
-      if (teams) {
-        for (var j in teams) {
-          this.scoreData.push({name: teams[j]['name'], score: teams[j]['score'], teamToken: j, answer: ''})
-        }
-        // 答案为空，当前状态为下一题按钮。若不为空，当前状态为显示答案按钮isBtn=false
-        this.isBtn = true
-        for (var m in teams) {
-          for (var n in teams[m]) {
-            if (teams[m][n]['answer'] !== '') {
-              this.isBtn = false
-              break
-            }
-          }
-        }
-      }
-    },
+
     onInitRace(data) {
       const {teamTokens} = data
       this.tokens = teamTokens
-      this.isCreate = true
-      this.isSet = false
+      this.step = 'ready'
     },
     onBeginRace(data) {
       const { enableAnswer, beginTime, questionIndex } = data
       this.enableAnswe = enableAnswer
       this.beginTime = beginTime
       this.questionIndex = questionIndex
+      this.step = 'started'
     },
     onNextQuestion(data) {
       const { questionIndex, question, score, updateTime, enableAnswer } = data
@@ -264,12 +254,6 @@ export default {
       this.answers = answers
       this.enableAnswer = enableAnswer
     },
-    onChangeScore(data) {
-      const { teams } = data
-      for (var i in teams) {
-        this.scoreData.push({name: teams[i]['name'], score: teams[i]['score'], teamToken: i, answer: ''})
-      }
-    },
     onEndRace(data) {
       const { enableAnswer, closed } = data
       this.enableAnswer = enableAnswer
@@ -277,10 +261,7 @@ export default {
     },
     onRename(data) {
       const { teams} = data
-      this.scoreData = []
-      for (var i in teams) {
-        this.scoreData.push({name: teams[i]['name'], score: teams[i]['score'], teamToken: i, answer: ''})
-      }
+      this.serverTeams = teams
     }
     // onAnswer(data) {
     //   const { teamToken, activeTeam, enableAnswer } = data

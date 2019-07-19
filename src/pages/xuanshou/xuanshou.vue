@@ -75,7 +75,7 @@ export default {
       raceName: '党建知识竞赛',
       teamToken: '',
       teamName: '',
-      questionIndex: 1,
+      questionIndex: 0,
       teamAnswer: [], // 存放选手选择的答案
       options: ['A', 'B', 'C', 'D', 'E'],
       enableAnswer: true// true不可点击控制是否可答题

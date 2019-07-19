@@ -1,5 +1,5 @@
 function createClient(token, type, onmessage) {
-  var url = 'ws://localhost' // 192.168.2.3' // + location.host
+  var url = 'ws://192.168.2.1' // + location.host
   if (type !== 'screen') { // judge, team
     url += '?' + type + 'Token=' + token
   }
@@ -56,8 +56,8 @@ function Client(type) {
 export function Judge() {
   Client.call(this, 'judge')
 
-  this.initRace = function(raceName, teamCount, raceMode) {
-    this.send({action: 'initRace', data: {raceName, teamCount, raceMode}})
+  this.initRace = function(raceName, holder, teamCount, raceMode) {
+    this.send({action: 'initRace', data: {raceName, holder, teamCount, raceMode}})
   }
   this.beginRace = function() {
     this.send({action: 'beginRace'})
@@ -68,8 +68,8 @@ export function Judge() {
   this.showAnswer = function(questionIndex) {
     this.send({action: 'showAnswer', data: {questionIndex}})
   }
-  this.changeScore = function(teamToken, teamScore) {
-    this.send({action: 'changeScore', data: {teamToken, teamScore}})
+  this.changeScore = function(teamToken, newValue) {
+    this.send({action: 'changeScore', data: {teamToken, newValue}})
   }
   this.endRace = function() {
     this.send({action: 'endRace'})
