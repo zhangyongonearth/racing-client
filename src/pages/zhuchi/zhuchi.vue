@@ -159,7 +159,7 @@ export default {
       isCreate: false, // 生成口令按钮 false可点击
       isSet: true, // 生成比赛按钮 false可点击
       tokens: [],
-      show_btn: true,
+      show_btn: true, // true是开始竞赛界面。false是结束竞赛界面
       questionIndex: 0,
       isBtn: true, // 为true时“下一题”按钮可点击，为false时“显示答案”按钮可点击
       isEnd: false, // 为false时结束竞赛”按钮可点击，为true不可点击
@@ -172,8 +172,12 @@ export default {
       if (this.zhuchiToken !== '') {
         localStorage.setItem('主持口令', this.zhuchiToken)
         this.judge.login(this.zhuchiToken)
-        this.type = 'viewRename'
-        localStorage.setItem('当前界面', this.type)
+        // if (localStorage.getItem('当前界面') && localStorage.getItem('当前界面') === 'viewStart') {
+        //   this.type = 'viewStart'
+        // } else {
+        //   this.type = 'viewRename'
+        //   localStorage.setItem('当前界面', this.type)
+        // }
       } else {
         return false
       }
@@ -213,7 +217,6 @@ export default {
     },
     // 改变分数按钮
     handleChangeScore(value) {
-      // 如何得到该行队形的token
       this.judge.changeScore(value.teamToken, value.score)
     },
     // 结束竞赛按钮
@@ -221,23 +224,36 @@ export default {
       this.judge.endRace()
     },
     onConnect(data) {
-      const {enableAnswer, questionIndex, updateTime, activeTeam, teams} = data
-      // this.enableAnswer = enableAnswer
-      // this.questionIndex = questionIndex
-      // this.updateTime = updateTime
-      // this.activeTeam = activeTeam
-      // for (var i in teams) {
-      //   this.scoreData.push({name: teams[i]['name'], score: teams[i]['score'], teamToken: i, answer: ''})
-      // }
-      if (this.zhuchiToken === localStorage.getItem('主持口令')) {
-        // this.type = localStorage.getItem('当前界面') //有问题：设置显示那些组件 要用localStorage？
-        if (enableAnswer) this.enableAnswer = enableAnswer
-        if (questionIndex) this.questionIndex = questionIndex
-        if (updateTime) this.updateTime = updateTime
-        if (activeTeam) this.activeTeam = activeTeam
-        if (teams) {
-          for (var j in teams) {
-            this.scoreData.push({name: teams[j]['name'], score: teams[j]['score'], teamToken: j, answer: ''})
+      const {raceName, enableAnswer, questionIndex, updateTime, activeTeam, teams} = data
+      // if(raceName==='' &&holdName==='') 服务端添加holdName后，该这么写。
+      if (raceName === '') {
+        this.type = 'viewRename'
+        // ？？？缺少口令生成后如何中断恢复
+      } else {
+        this.type = 'viewStart'
+      }
+      if (enableAnswer) this.enableAnswer = enableAnswer
+      if (questionIndex > 0) {
+        // 若questionIndex大于0，显示有结束竞赛按钮的界面。
+        this.questionIndex = questionIndex
+        this.show_btn = false
+      } else {
+        this.show_btn = true
+      }
+      if (updateTime) this.updateTime = updateTime
+      if (activeTeam) this.activeTeam = activeTeam
+      if (teams) {
+        for (var j in teams) {
+          this.scoreData.push({name: teams[j]['name'], score: teams[j]['score'], teamToken: j, answer: ''})
+        }
+        // 答案为空，当前状态为下一题按钮。若不为空，当前状态为显示答案按钮isBtn=false
+        this.isBtn = true
+        for (var m in teams) {
+          for (var n in teams[m]) {
+            if (teams[m][n]['answer'] !== '') {
+              this.isBtn = false
+              break
+            }
           }
         }
       }

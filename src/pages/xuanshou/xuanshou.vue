@@ -108,7 +108,13 @@ export default {
         localStorage.setItem('战队口令', this.teamToken)
         this.team.login(this.teamToken)
         this.type = 'viewRename'
-        localStorage.setItem('当前界面', this.type)
+        // 若type存在且等于viewStart,则进入到选项界面。否则type不存在（存储type）或者是等于viewReanme则进入到命名界面。
+        // if (localStorage.getItem('当前界面') && localStorage.getItem('当前界面') === 'viewStart') {
+        //   this.type = 'viewOptions'
+        // } else {
+        //   this.type = 'viewRename'
+        //   localStorage.setItem('当前界面', this.type)
+        // }
       } else {
         return false
       }
@@ -134,19 +140,16 @@ export default {
     },
     onConnect(data) {
       const {enableAnswer, questionIndex, updateTime, activeTeam, teams} = data
-      // this.enableAnswer = !enableAnswer
-      // this.questionIndex = questionIndex
-      // this.updateTime = updateTime
-      // this.activeTeam = activeTeam
-      // this.teams = teams
-      if (this.teamToken === localStorage.getItem('战队口令')) {
-        // this.type === localStorage.getItem('当前界面') // 有问题：设置显示那些组件 要用localStorage 不行的？
-        if (enableAnswer) this.enableAnswer = enableAnswer
-        if (questionIndex) this.questionIndex = questionIndex
-        if (updateTime) this.updateTime = updateTime
-        if (activeTeam) this.activeTeam = activeTeam
-        if (teams) this.teams = teams
+      // ？？？缺少判断是否处于viewRenam界面，也就是队伍命名界面
+      if (enableAnswer) this.enableAnswer = enableAnswer
+      if (questionIndex > 1) {
+        // ？？？缺少选项点击时黄色背景，主持未点击下一题时选项的黄色颜色
+        this.type = 'viewOptions'
+        this.questionIndex = questionIndex
       }
+      if (updateTime) this.updateTime = updateTime
+      if (activeTeam) this.activeTeam = activeTeam
+      if (teams) this.teams = teams
     },
     onInitRace(data) {
       const {enableAnswer} = data
