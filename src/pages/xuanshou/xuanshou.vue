@@ -1,77 +1,68 @@
 <template>
-<div class="main-xuanshou">
+<div>
   <!-- 选手口令界面 -->
-  <div v-if="type==='viewToken'" class="xuanshou-one">
-      <van-row :span="8" class="row-icon">
-        <svg-icon icon-class="cup"></svg-icon>
-        <div class="one-racename">{{raceName}}</div>
-      </van-row>
-      <van-row :span="8" type="flex" justify="center" class="row-name">
-        <van-col :span="5">
-          <van-tag
-          color="#cd2323"
-          class="left teamToken-left">战队口令</van-tag>
-        </van-col>
-        <van-col :span="15">
-        <van-field
-          v-model="teamToken"
-          border
-          type="number"
-          placeholder="点击输入文本"
-          class="right teamToken-right"></van-field>
-        </van-col>
-      </van-row>
-      <van-row :span="8" class="row-start">
-        <van-button round class="one-start" @click="handleLogin">登录</van-button>
-      </van-row>
-  </div>
-  <!-- 选手名字界面 -->
-  <div v-else-if="type==='viewRename'" class="xuanshou-one">
-      <van-row :span="8" class="row-icon">
-        <svg-icon icon-class="cup"></svg-icon>
-        <div class="one-racename">{{raceName}}</div>
-      </van-row>
-      <van-row :span="8" type="flex" justify="center" class="row-name">
-        <van-col :span="5">
-          <van-tag
-          color="#cd2323"
-          class="left teamname-left">战队名称</van-tag>
-        </van-col>
-        <van-col :span="15">
-          <van-field
-            v-model="teamName"
-            border
-            type="string"
-            placeholder="点击输入文本"
-            class="right teamname-right">{{teamName}}</van-field>
-        </van-col>
-      </van-row>
-      <van-row :span="8" class="row-start">
-        <van-button round class="one-start" @click="handleRename">开始答题</van-button>
-      </van-row>
-  </div>
-  <!-- 选项界面 -->
-  <div v-else-if="type==='viewOptions'" class="xuanshou-two">
-    <van-row class="row-number">
-      <span>
-        第<span class="two-currentNumber">{{questionIndex}}</span>题
-      </span>
-    </van-row>
-    <van-row type="flex" justify="space-between" class="row-options">
-      <van-col class="col-options">
-        <van-button
-        v-for="(option) in options"
-        :key="option"
-        @click="select(option)"
-        :class="teamAnswer.indexOf(option) == -1 ? 'option-button':'option-button option-button-active'"
-        >{{option}}
-        </van-button>
+  <van-row v-show="step==='login'|| step==='ready'" style="height:50vh;line-height:50vh;">
+    <svg-icon icon-class="cup" style="vertical-align: middle;font-size:15rem;"></svg-icon>
+  </van-row>
+  <van-row  v-show="step==='login'|| step==='ready'" class="view-title" style="height:10vh">
+    <span>网络软件研发部抢答系统</span>
+  </van-row>
+  <van-row  v-show="step==='login'"  type="flex" justify="center" style="margin-top:10vh; height:10vh" >
+    <van-col :span="5">
+      <van-tag
+      color="#cd2323"
+      class="left racename-left">战队口令</van-tag>
+    </van-col>
+    <van-col :span="15">
+      <van-field
+        v-model="teamToken"
+        border
+        placeholder="点击输入口令"
+        class="right-input">
+      </van-field>
       </van-col>
-    </van-row>
-    <van-row :span="4" class="row-start">
-        <van-button round :disabled="enableAnswer" class="two-start" @click="handleAnswer">提交</van-button>
-    </van-row>
-  </div>
+  </van-row>
+  <van-row  v-show="step==='login'"  style="margin-top:10vh; height:10vh;" >
+    <van-button round class="button-click" @click="handleLogin">登录</van-button>
+  </van-row>
+  <van-row  v-show="step==='ready'"  type="flex" justify="center" style="margin-top:10vh; height:10vh" >
+    <van-col :span="5">
+      <van-tag
+      color="#cd2323"
+      class="left racename-left">战队名称</van-tag>
+    </van-col>
+    <van-col :span="15">
+      <van-field
+        v-model="teamName"
+        border
+        placeholder="点击输入文本"
+        class="right">
+      </van-field>
+      </van-col>
+  </van-row>
+  <van-row  v-show="step==='ready'"  style="margin-top:10vh; height:10vh;" >
+    <van-button round class="button-click" @click="handleRename">开始答题</van-button>
+  </van-row>
+  <!-- 选项界面 -->
+  <van-row v-show="step==='submit'" style="height:10vh; line-height:10vh;" class="row-number" >
+    <span>
+      第<span class="question-index">{{questionIndex}}</span>题
+    </span>
+  </van-row>
+  <van-row v-show="step==='submit'" style="height:80vh;" type="flex" justify="space-between" >
+    <van-col>
+      <van-button
+      v-for="(option) in options"
+      :key="option"
+      @click="select(option)"
+      :class="teamAnswer.indexOf(option) == -1 ? 'option-button':'option-button option-button-active'"
+      style="height:8vh;margin-top:6vh;">{{option}}
+      </van-button>
+    </van-col>
+  </van-row>
+  <van-row v-show="step==='submit'" style="height:10vh;line-height:10vh;" >
+    <van-button round :disabled="enableAnswer" class="button-click" @click="handleAnswer">提交答案</van-button>
+  </van-row>
 </div>
 </template>
 
@@ -80,10 +71,10 @@ import { Team } from '../client'
 export default {
   data() {
     return {
-      type: 'viewToken',
+      step: 'login', // login登录 ready准备答题 submit提交答案
       raceName: '党建知识竞赛',
-      teamName: '',
       teamToken: '',
+      teamName: '',
       questionIndex: 1,
       teamAnswer: [], // 存放选手选择的答案
       options: ['A', 'B', 'C', 'D', 'E'],
@@ -91,23 +82,11 @@ export default {
     }
   },
   methods: {
-    select(option) {
-      // -1表示其中不包含元素
-      if (this.teamAnswer.indexOf(option) !== -1) {
-        for (var i = 0; i < this.teamAnswer.length; i++) {
-          if (this.teamAnswer[i] === option) {
-            this.teamAnswer.splice(i, 1)
-          }
-        }
-      } else {
-        this.teamAnswer.push(option)
-      }
-    },
     handleLogin() {
       if (this.teamToken !== '') {
         localStorage.setItem('战队口令', this.teamToken)
         this.team.login(this.teamToken)
-        this.type = 'viewRename'
+        this.step = 'ready'
         // 若type存在且等于viewStart,则进入到选项界面。否则type不存在（存储type）或者是等于viewReanme则进入到命名界面。
         // if (localStorage.getItem('当前界面') && localStorage.getItem('当前界面') === 'viewStart') {
         //   this.type = 'viewOptions'
@@ -122,10 +101,21 @@ export default {
     handleRename() {
       if (this.teamName !== '') {
         this.team.rename(this.teamName)
-        this.type = 'viewOptions'
-        localStorage.setItem('当前界面', this.type)
+        this.step = 'submit'
       } else {
         return false
+      }
+    },
+    select(option) {
+      // -1表示其中不包含元素
+      if (this.teamAnswer.indexOf(option) !== -1) {
+        for (var i = 0; i < this.teamAnswer.length; i++) {
+          if (this.teamAnswer[i] === option) {
+            this.teamAnswer.splice(i, 1)
+          }
+        }
+      } else {
+        this.teamAnswer.push(option)
       }
     },
     handleAnswer() {
@@ -144,7 +134,6 @@ export default {
       if (enableAnswer) this.enableAnswer = enableAnswer
       if (questionIndex > 1) {
         // ？？？缺少选项点击时黄色背景，主持未点击下一题时选项的黄色颜色
-        this.type = 'viewOptions'
         this.questionIndex = questionIndex
       }
       if (updateTime) this.updateTime = updateTime
@@ -239,32 +228,12 @@ export default {
 </script>
 
 <style>
-html {
-  font-size : 10px;
-}
-@media only screen and (min-width: 720px){
-  html {
-    font-size: 11.25px !important;
-  }
-}
-@media only screen and (min-width: 960px){
-  html {
-    font-size: 15px !important;
-  }
-}
-.svg-icon{
-  font-size: 180px;
-}
-.row-icon{
-  text-align: center;
-  padding-top: 12vh;
-}
-.one-racename{
-  font-size: 40px;
-  color: #cd2323;
-}
 .van-row{
   text-align: center;
+}
+.view-title{
+  font-size: 1.5rem;
+  color: #cd2323;
 }
 .van-col--5{
   width: auto!important;
@@ -277,16 +246,10 @@ html {
   border-radius: 0em!important;
   border: 1px solid #cd2323;
 }
-.right{
+.right-input{
   border: 1px solid #cca;
 }
-.row-name{
-  padding: 8vh 0 4vh 0;
-}
-.row-start{
-  padding-top:8vh;
-}
-.one-start{
+.button-click{
   height: 7vh!important;
   font-size: 18px!important;
   width: 40vh!important;
@@ -297,27 +260,18 @@ html {
   background:#cd2323;
   font-size: 30px;
   color:#fff;
-  padding: 8vh;
-  margin-bottom: 8vh;
+  vertical-align: middle;
 }
-.two-currentNumber{
+.question-index{
   color: #cd2323;
   background: #fff;
   padding: 0 15px;
   margin: 0 25px;
 }
-.two-start{
-  height: 7vh!important;
-  font-size: 18px!important;
-  width: 40vh!important;
-  background: #cd2323!important;
-  color: #fff!important;
-}
 .option-button{
   font-size: 35px!important;
   width: 40vh;
   border: 1px solid #000!important;
-  margin: 1.5vh!important;
   background: #fff!important;
   color: #000!important;
 }
