@@ -84,16 +84,8 @@ export default {
   methods: {
     handleLogin() {
       if (this.teamToken !== '') {
-        localStorage.setItem('战队口令', this.teamToken)
+        localStorage.setItem('token', this.teamToken)
         this.team.login(this.teamToken)
-        // this.step = 'ready'
-        // 若type存在且等于viewStart,则进入到选项界面。否则type不存在（存储type）或者是等于viewReanme则进入到命名界面。
-        // if (localStorage.getItem('当前界面') && localStorage.getItem('当前界面') === 'viewStart') {
-        //   this.type = 'viewOptions'
-        // } else {
-        //   this.type = 'viewRename'
-        //   localStorage.setItem('当前界面', this.type)
-        // }
       } else {
         return false
       }
@@ -139,7 +131,6 @@ export default {
         }
       }
       this.enableAnswer = enableAnswer
-
       this.questionIndex = questionIndex
       this.updateTime = updateTime
       this.activeTeam = activeTeam
@@ -226,6 +217,10 @@ export default {
           self.onAnswer(data)
           break
       }
+    }
+    this.teamToken = localStorage.getItem('token')
+    if (this.teamToken) {
+      this.team.login(this.teamToken)
     }
   }
 }
