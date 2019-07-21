@@ -12,36 +12,35 @@ module.exports = {
 
       // 标题，可选项，一般情况不使用，通常是在路由切换时设置title
       // 需要注意的是使用title属性template 中的 title 标签需要是 <title><%= htmlWebpackPlugin.options.title %></title>
-      title: 'xuanshou',
+      title: 'xuanshou'
 
       // 包含的模块，可选项
-      chunks: ['xuanshou']
+      // chunks: ['xuanshou']
     },
     zhuchi: {
       entry: 'src/pages/zhuchi/zhuchi.js',
       template: 'public/index.html',
       filename: 'zhuchi.html',
-      title: 'zhuchi',
-      chunks: ['zhuchi']
+      title: 'zhuchi'
+      // chunks: ['zhuchi']
     },
     screen: {
       entry: 'src/pages/screen/screen.js',
       template: 'public/index.html',
       filename: 'screen.html',
-      title: 'screen',
-      chunks: ['screen']
+      title: 'screen'
+      // chunks: ['screen']
     },
     index: {
       entry: 'src/pages/index.js',
       template: 'public/index.html',
       filename: 'index.html',
-      title: 'index',
-      chunks: ['index']
+      title: 'index'
+      // chunks: ['index']
     }
   },
   productionSourceMap: false,
   chainWebpack: config => {
-    // svg是个基础loader
     const svgRule = config.module.rule('svg')
     // 清除已有的所有 loader。
     // 如果你不这样做，接下来的 loader 会附加在该规则现有的 loader 之后。
@@ -54,18 +53,5 @@ module.exports = {
       .options({
         symbolId: 'icon-[name]'
       })
-    // config.module.rules.delete('svg')
-    // config.module
-    //   .rule('svg-sprite-loader')
-    //   .test(/\.svg$/)
-    // //   .include
-    // //   .add() //处理svg目录
-    //   .end()
-    //   .use('svg-sprite-loader')
-    //   .loader('svg-sprite-loader')
-    //   .options({
-    //     symbolId: 'icon-[name]',
-    //     include: ['src/icons']
-    //   })
   }
 }
