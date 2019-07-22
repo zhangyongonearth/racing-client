@@ -54,6 +54,7 @@
       <van-button
         v-for="(option) in options"
         :key="option"
+        :disabled="!enableAnswer"
         @click="select(option)"
         :class="teamAnswer.indexOf(option) == -1 ? 'option-button':'option-button option-button-active'"
         style="height:8vh;margin-top:6vh;">
@@ -62,7 +63,7 @@
     </van-col>
   </van-row>
   <van-row v-show="step==='submit'" style="height:10vh;line-height:10vh;" >
-    <van-button round :disabled="enableAnswer" class="button-click" @click="handleAnswer">提交答案</van-button>
+    <van-button round :disabled="!enableAnswer" class="button-click" @click="handleAnswer">提交答案</van-button>
   </van-row>
 </div>
 </template>
@@ -123,9 +124,8 @@ export default {
     },
     onConnect(data) {
       const {enableAnswer, questionIndex, updateTime, activeTeam, teams} = data
-      var self = this
-      if (teams && teams[self.teamToken]) {
-        if (teams[self.teamToken]['name']) {
+      if (teams && teams[this.teamToken]) {
+        if (teams[this.teamToken]['name']) {
           this.step = 'submit'
         } else {
           this.step = 'ready'
@@ -138,11 +138,11 @@ export default {
     },
     onInitRace(data) {
       const {enableAnswer} = data
-      this.enableAnswer = !enableAnswer
+      this.enableAnswer = enableAnswer
     },
     onBeginRace(data) {
       const { enableAnswer, beginTime, questionIndex } = data
-      this.enableAnswer = !enableAnswer
+      this.enableAnswer = enableAnswer
       this.beginTime = beginTime
       this.questionIndex = questionIndex
     },
@@ -152,14 +152,13 @@ export default {
       this.question = question
       this.score = score
       this.updateTime = updateTime
-      this.enableAnswer = !enableAnswer
+      this.enableAnswer = enableAnswer
       this.teamAnswer = []
     },
     onShowAnswer(data) {
-      const { answer, answers, enableAnswer } = data
-      this.answer = answer
+      const { answers, enableAnswer } = data
       this.answers = answers
-      this.enableAnswer = !enableAnswer
+      this.enableAnswer = enableAnswer
     },
     onChangeScore(data) {
       const { teams } = data
@@ -167,19 +166,17 @@ export default {
     },
     onEndRace(data) {
       const { enableAnswer, closed } = data
-      this.enableAnswer = !enableAnswer
+      this.enableAnswer = enableAnswer
       this.closed = closed
     },
     onRename(data) {
-      const { newName, teamToken } = data
+      const { newName } = data
       this.teamName = newName
-      this.teamToken === teamToken
     },
     onAnswer(data) {
-      const { teamToken, activeTeam, enableAnswer } = data
-      this.teamToken = teamToken
+      const { teamToken, activeTeam } = data
       this.activeTeam = activeTeam
-      this.enableAnswer = !enableAnswer
+      if (teamToken === this.teamToken) this.enableAnswer = false
     }
   },
   mounted() {

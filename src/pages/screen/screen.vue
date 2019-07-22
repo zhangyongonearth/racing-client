@@ -171,7 +171,11 @@ export default {
       const { answer, answers } = data
       this.correctAnswer = answer
       this.tableData.forEach((v, i) => {
-        this.tableData[i]['answer'] = answers[v.teamToken]['answer']
+        if (answers[v.teamToken]) {
+          this.tableData[i]['answer'] = answers[v.teamToken]['answer']
+        } else {
+          this.tableData[i]['answer'] = '超时未答'
+        }
       })
     },
     onChangeScore(data) {

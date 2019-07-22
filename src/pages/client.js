@@ -1,5 +1,5 @@
 function createClient(token, type, onmessage) {
-  var url = 'ws://' + location.host
+  var url = 'ws://10.220.10.53' // + location.host
   if (type !== 'screen') { // judge, team
     url += '?' + type + 'Token=' + token
   }
