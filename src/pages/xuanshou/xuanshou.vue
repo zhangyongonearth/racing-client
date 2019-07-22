@@ -29,7 +29,7 @@
     <van-col :span="5">
       <van-tag
       color="#cd2323"
-      class="left racename-left">战队名称</van-tag>
+      class="left racename-left">参赛名称</van-tag>
     </van-col>
     <van-col :span="15">
       <van-field
