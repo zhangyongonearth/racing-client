@@ -11,7 +11,7 @@
     <van-col :span="5">
       <van-tag
       color="#cd2323"
-      class="left racename-left">战队口令</van-tag>
+      class="left racename-left">参赛口令</van-tag>
     </van-col>
     <van-col :span="15">
       <van-field
@@ -52,11 +52,12 @@
   <van-row v-show="step==='submit'" style="height:80vh;" type="flex" justify="space-between" >
     <van-col>
       <van-button
-      v-for="(option) in options"
-      :key="option"
-      @click="select(option)"
-      :class="teamAnswer.indexOf(option) == -1 ? 'option-button':'option-button option-button-active'"
-      style="height:8vh;margin-top:6vh;">{{option}}
+        v-for="(option) in options"
+        :key="option"
+        @click="select(option)"
+        :class="teamAnswer.indexOf(option) == -1 ? 'option-button':'option-button option-button-active'"
+        style="height:8vh;margin-top:6vh;">
+        {{option}}
       </van-button>
     </van-col>
   </van-row>
