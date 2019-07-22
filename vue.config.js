@@ -12,10 +12,10 @@ module.exports = {
 
       // 标题，可选项，一般情况不使用，通常是在路由切换时设置title
       // 需要注意的是使用title属性template 中的 title 标签需要是 <title><%= htmlWebpackPlugin.options.title %></title>
-      title: 'xuanshou'
+      title: 'xuanshou',
 
       // 包含的模块，可选项
-      // chunks: ['xuanshou']
+      chunks: ['chunk-vendors', 'chunk-common', 'xuanshou']
     },
     zhuchi: {
       entry: 'src/pages/zhuchi/zhuchi.js',

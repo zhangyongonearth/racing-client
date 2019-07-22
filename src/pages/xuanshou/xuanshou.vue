@@ -1,5 +1,5 @@
 <template>
-<div>
+<div class="content">
   <!-- 选手口令界面 -->
   <van-row v-show="step==='login'|| step==='ready'" style="height:50vh;line-height:50vh;">
     <svg-icon icon-class="cup" style="vertical-align: middle;font-size:15rem;"></svg-icon>
@@ -115,8 +115,8 @@ export default {
       this.teamAnswer.sort()
       this.teamAnswer.join('')
       console.log(this.teamAnswer)
-      if (this.teamAnswer !== '') {
-        this.team.answer(this.teamAnswer, this.questionIndex)
+      if (this.teamAnswer.length > 0) {
+        this.team.answer(this.teamAnswer.join(''), this.questionIndex)
       } else {
         return false
       }
@@ -228,6 +228,11 @@ export default {
 </script>
 
 <style>
+/* .content{
+  position:absolute;
+  top:0;
+  bottom: 0;
+} */
 .van-row{
   text-align: center;
 }

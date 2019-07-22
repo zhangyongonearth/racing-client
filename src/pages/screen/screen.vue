@@ -43,10 +43,10 @@
         <table class="table table-striped table-inverse table-bordered">
             <thead class="thead-inverse">
                 <tr>
-                    <th>排名</th>
-                    <th>组名</th>
-                    <th>分数</th>
-                    <th>答案</th>
+                    <th width="10%">排名</th>
+                    <th width="50%">组名</th>
+                    <th width="20%">分数</th>
+                    <th width="20%">答案</th>
                 </tr>
             </thead>
             <transition-group name="flip-list" tag="tbody">
@@ -163,6 +163,9 @@ export default {
       this.question = question
       this.correctAnswer = ''
       this.activeTeam = undefined
+      this.tableData.forEach((v, i) => {
+        this.tableData[i]['answer'] = ''
+      })
     },
     onShowAnswer(data) {
       const { answer, answers } = data
