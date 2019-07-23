@@ -121,7 +121,7 @@
       </el-table-column>
       </el-table>
   </van-row>
-  <van-row v-show="step==='ready'" style="height:80vh;line-height:15vh">
+  <van-row v-show="step==='ready'" style="height:80vh;line-height:10vh">
     <van-row v-for="(token) in tokens" :key="token">{{token}}</van-row>
   </van-row>
   <van-row v-show="step==='ready'" style="height:10vh;line-height:10vh;"  >
@@ -192,7 +192,6 @@ export default {
       if (this.zhuchiToken !== '') {
         localStorage.setItem('主持口令', this.zhuchiToken)
         this.judge.login(this.zhuchiToken)
-        this.step = 'init'
       } else {
         return false
       }

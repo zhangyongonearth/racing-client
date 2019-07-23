@@ -35,7 +35,7 @@
       <van-field
         v-model="teamName"
         border
-        placeholder="点击输入文本"
+        placeholder="给自己队伍起个响当当的名字"
         class="right">
       </van-field>
       </van-col>
