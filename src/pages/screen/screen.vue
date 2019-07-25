@@ -339,6 +339,6 @@ table tr {
   transition: transform 1s;
 }
 .is-active{
-  background:rgba(0,0,0,.1);
+  background:rgba(235,235,16,.4);
 }
 </style>
