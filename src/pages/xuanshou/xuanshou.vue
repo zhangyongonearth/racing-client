@@ -49,18 +49,18 @@
       第<span class="question-index">{{questionIndex}}</span>题
     </span>
   </van-row>
-  <van-row v-show="step==='submit'" style="height:80vh;" type="flex" justify="space-between" >
-    <van-col>
-      <van-button
-        v-for="(option) in options"
-        :key="option"
-        :disabled="!enableAnswer"
-        @click="select(option)"
-        :class="teamAnswer.indexOf(option) == -1 ? 'option-button':'option-button option-button-active'"
-        style="height:8vh;margin-top:6vh;">
-        {{option}}
-      </van-button>
-    </van-col>
+  <van-row v-show="step==='submit'" style="height:20vh;margin-top:10vh;margin-bottom:10vh;" type="flex" justify="space-between" >
+    <van-button
+      v-for="(option) in options"
+      :key="option"
+      :disabled="!enableAnswer"
+      @click="select(option)"
+      :class="checkedOption.indexOf(option) == -1 ? 'option-button':'option-button option-button-active'">
+      {{option}}
+    </van-button>
+  </van-row>
+  <van-row v-show="step==='submit'" style="height:20vh;line-height:20vh;margin-top:10vh;margin-bottom:10vh; ">
+    <van-field v-model="teamAnswer" label="答案：" style="border:0.5px solid #cd2323" />
   </van-row>
   <van-row v-show="step==='submit'" style="height:10vh;line-height:10vh;" >
     <van-button round :disabled="!enableAnswer" class="button-click" @click="handleAnswer">提交答案</van-button>
@@ -73,12 +73,13 @@ import { Team } from '../client'
 export default {
   data() {
     return {
-      step: 'login', // login登录 ready准备答题 submit提交答案
+      step: 'submit', // login登录 ready准备答题 submit提交答案
       raceName: '党建知识竞赛',
       teamToken: '',
       teamName: '',
       questionIndex: 0,
-      teamAnswer: [], // 存放选手选择的答案
+      checkedOption: [],
+      teamAnswer: '', // 存放选手选择的答案
       options: ['A', 'B', 'C', 'D', 'E'],
       enableAnswer: true// true不可点击控制是否可答题
     }
@@ -102,22 +103,27 @@ export default {
     },
     select(option) {
       // -1表示其中不包含元素
-      if (this.teamAnswer.indexOf(option) !== -1) {
-        for (var i = 0; i < this.teamAnswer.length; i++) {
-          if (this.teamAnswer[i] === option) {
-            this.teamAnswer.splice(i, 1)
+      if (this.checkedOption.indexOf(option) !== -1) {
+        for (var i = 0; i < this.checkedOption.length; i++) {
+          if (this.checkedOption[i] === option) {
+            this.checkedOption.splice(i, 1)
+            this.checkedOption.sort()
+            this.teamAnswer = this.checkedOption.join('')
           }
         }
       } else {
-        this.teamAnswer.push(option)
+        this.checkedOption.push(option)
+        this.checkedOption.sort()
+        this.teamAnswer = this.checkedOption.join('')
       }
     },
     handleAnswer() {
-      this.teamAnswer.sort()
-      this.teamAnswer.join('')
+      // this.checkedOption.sort()
+      // this.checkedOption.join('')
+      // this.teamAnswer = this.checkedOption
       console.log(this.teamAnswer)
       if (this.teamAnswer.length > 0) {
-        this.team.answer(this.teamAnswer.join(''), this.questionIndex)
+        this.team.answer(this.teamAnswer, this.questionIndex)
       } else {
         return false
       }
@@ -271,8 +277,11 @@ export default {
   margin: 0 25px;
 }
 .option-button{
-  font-size: 35px!important;
-  width: 40vh;
+  font-size: 20px!important;
+  width: 18%;
+  height:8vh!important;
+  line-height: 8vh!important;
+  text-align: center!important;
   border: 1px solid #000!important;
   background: #fff!important;
   color: #000!important;
