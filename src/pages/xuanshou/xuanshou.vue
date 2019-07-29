@@ -9,17 +9,10 @@
   </van-row>
   <van-row  v-show="step==='login'"  type="flex" justify="center" style="margin-top:10vh; height:10vh" >
     <van-col :span="5">
-      <van-tag
-      color="#cd2323"
-      class="left racename-left">参赛口令</van-tag>
+      <van-tag color="#cd2323" >参赛口令</van-tag>
     </van-col>
     <van-col :span="15">
-      <van-field
-        v-model="teamToken"
-        border
-        placeholder="点击输入口令"
-        class="right-input">
-      </van-field>
+      <van-field v-model="teamToken" placeholder="点击输入口令" class="border" />
       </van-col>
   </van-row>
   <van-row  v-show="step==='login'"  style="margin-top:10vh; height:10vh;" >
@@ -27,18 +20,11 @@
   </van-row>
   <van-row  v-show="step==='ready'"  type="flex" justify="center" style="margin-top:10vh; height:10vh" >
     <van-col :span="5">
-      <van-tag
-      color="#cd2323"
-      class="left racename-left">参赛名称</van-tag>
+      <van-tag color="#cd2323" >参赛名称</van-tag>
     </van-col>
     <van-col :span="15">
-      <van-field
-        v-model="teamName"
-        border
-        placeholder="给自己队伍起个响当当的名字"
-        class="right">
-      </van-field>
-      </van-col>
+        <van-field v-model="teamName" placeholder="给自己队伍起个响当当的名字" class="border" />
+    </van-col>
   </van-row>
   <van-row  v-show="step==='ready'"  style="margin-top:10vh; height:10vh;" >
     <van-button round class="button-click" @click="handleRename">开始答题</van-button>
@@ -49,7 +35,10 @@
       第<span class="question-index">{{questionIndex}}</span>题
     </span>
   </van-row>
-  <van-row v-show="step==='submit'" style="height:20vh;margin-top:10vh;margin-bottom:10vh;" type="flex" justify="space-between" >
+  <van-row v-show="step==='submit'" style="height:50vh; padding:10px;text-align:left" >
+    <div v-html="question"></div>
+  </van-row>
+  <van-row v-show="step==='submit'" style="height:10vh;" type="flex" justify="space-between" >
     <van-button
       v-for="(option) in options"
       :key="option"
@@ -59,8 +48,8 @@
       {{option}}
     </van-button>
   </van-row>
-  <van-row v-show="step==='submit'" style="height:20vh;line-height:20vh;margin-top:10vh;margin-bottom:10vh; ">
-    <van-field v-model="teamAnswer" label="答案：" style="border:0.5px solid #cd2323" />
+  <van-row v-show="step==='submit'" style="height:10vh; padding:0 10vw 0 10vw">
+    <van-field v-model="teamAnswer" class="border" label="答案：" />
   </van-row>
   <van-row v-show="step==='submit'" style="height:10vh;line-height:10vh;" >
     <van-button round :disabled="!enableAnswer" class="button-click" @click="handleAnswer">提交答案</van-button>
@@ -71,13 +60,15 @@
 <script>
 import { Team } from '../client'
 export default {
+  name: 'Xuanshou',
   data() {
     return {
-      step: 'submit', // login登录 ready准备答题 submit提交答案
+      step: 'login', // login登录 ready准备答题 submit提交答案
       raceName: '党建知识竞赛',
       teamToken: '',
       teamName: '',
       questionIndex: 0,
+      question: '',
       checkedOption: [],
       teamAnswer: '', // 存放选手选择的答案
       options: ['A', 'B', 'C', 'D', 'E'],
@@ -96,40 +87,29 @@ export default {
     handleRename() {
       if (this.teamName !== '') {
         this.team.rename(this.teamName)
-        this.step = 'submit'
       } else {
         return false
       }
+      this.step = 'submit'
     },
     select(option) {
-      // -1表示其中不包含元素
       if (this.checkedOption.indexOf(option) !== -1) {
-        for (var i = 0; i < this.checkedOption.length; i++) {
-          if (this.checkedOption[i] === option) {
-            this.checkedOption.splice(i, 1)
-            this.checkedOption.sort()
-            this.teamAnswer = this.checkedOption.join('')
-          }
-        }
+        this.checkedOption.splice(this.checkedOption.indexOf(option), 1)
       } else {
         this.checkedOption.push(option)
         this.checkedOption.sort()
-        this.teamAnswer = this.checkedOption.join('')
       }
+      this.teamAnswer = this.checkedOption.join('')
     },
     handleAnswer() {
-      // this.checkedOption.sort()
-      // this.checkedOption.join('')
-      // this.teamAnswer = this.checkedOption
-      console.log(this.teamAnswer)
-      if (this.teamAnswer.length > 0) {
+      if (this.teamAnswer !== '') {
         this.team.answer(this.teamAnswer, this.questionIndex)
       } else {
         return false
       }
     },
     onConnect(data) {
-      const {enableAnswer, questionIndex, updateTime, activeTeam, teams} = data
+      const {enableAnswer, question, questionIndex, updateTime, activeTeam, teams} = data
       if (teams && teams[this.teamToken]) {
         if (teams[this.teamToken]['name']) {
           this.step = 'submit'
@@ -139,6 +119,7 @@ export default {
       }
       this.enableAnswer = enableAnswer
       this.questionIndex = questionIndex
+      this.question = question
       this.updateTime = updateTime
       this.activeTeam = activeTeam
     },
@@ -159,26 +140,28 @@ export default {
       this.score = score
       this.updateTime = updateTime
       this.enableAnswer = enableAnswer
-      this.teamAnswer = []
+      this.teamAnswer = ''
+      this.checkedOption = []
     },
     onShowAnswer(data) {
       const { answers, enableAnswer } = data
       this.answers = answers
       this.enableAnswer = enableAnswer
     },
-    onChangeScore(data) {
-      const { teams } = data
-      this.teams = teams
-    },
+    // onChangeScore(data) {
+    //   const { teams } = data
+    //   this.teams = teams
+    // },
     onEndRace(data) {
       const { enableAnswer, closed } = data
       this.enableAnswer = enableAnswer
       this.closed = closed
     },
-    onRename(data) {
-      const { newName } = data
-      this.teamName = newName
-    },
+    // onRename(data) {
+    //   const { newName } = data
+    //   this.teamName = newName
+    //   this.step = 'submit'
+    // },
     onAnswer(data) {
       const { teamToken, activeTeam } = data
       this.activeTeam = activeTeam
@@ -208,15 +191,15 @@ export default {
         case 'showAnswer':
           self.onShowAnswer(data)
           break
-        case 'changeScore':
-          self.onChangeScore(data)
-          break
+        // case 'changeScore':
+        //   self.onChangeScore(data)
+        //   break
         case 'endRace':
           self.onEndRace(data)
           break
-        case 'rename':
-          self.onRename(data)
-          break
+        // case 'rename': // 后台未返回
+        //   self.onRename(data)
+        //   break
         case 'answer':
           self.onAnswer(data)
           break
@@ -231,6 +214,9 @@ export default {
 </script>
 
 <style>
+*{
+  box-sizing: border-box;
+}
 /* .content{
   position:absolute;
   top:0;
@@ -254,7 +240,7 @@ export default {
   border-radius: 0em!important;
   border: 1px solid #cd2323;
 }
-.right-input{
+.border{
   border: 1px solid #cca;
 }
 .button-click{
@@ -266,7 +252,7 @@ export default {
 }
 .row-number{
   background:#cd2323;
-  font-size: 30px;
+  font-size: 5vh;
   color:#fff;
   vertical-align: middle;
 }

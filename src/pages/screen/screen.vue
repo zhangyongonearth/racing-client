@@ -24,11 +24,11 @@
         <svg-icon icon-class="file" style="font-size:3vh;"></svg-icon>题目:{{questionIndex}}
       </el-row>
       <!-- 60vh -->
-      <el-row style="height:60vh; line-height:6vh; padding:20px;" class="border opacity border-bottom-radius">
+      <el-row style="height:60vh; line-height:6vh; font-size:3vh; padding:20px;" class="border opacity border-bottom-radius">
         <div v-html="question"></div>
       </el-row>
       <!-- 14vh -->
-      <el-row style="height:8vh; line-height:8vh; margin-top:3vh; margin-bottom:3vh; font-size:3vh" class="border opacity border-bottom-radius border-top-radius">
+      <el-row style="height:8vh; line-height:8vh; font-size:3vh margin-top:3vh; margin-bottom:3vh;" class="border opacity border-bottom-radius border-top-radius">
         <svg-icon icon-class="showanswer"></svg-icon>正确答案：&nbsp;&nbsp;&nbsp;&nbsp;
         {{correctAnswer}}
       </el-row>
@@ -44,9 +44,9 @@
             <thead class="thead-inverse">
                 <tr>
                     <th width="10%">排名</th>
-                    <th width="50%">组名</th>
+                    <th width="35%">组名</th>
                     <th width="20%">分数</th>
-                    <th width="20%">答案</th>
+                    <th width="35%">答案</th>
                 </tr>
             </thead>
             <transition-group name="flip-list" tag="tbody">
